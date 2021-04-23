@@ -1,0 +1,390 @@
+---
+title: "Hypothesis Testing"
+author: "JJB + Course"
+date: "9/21/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+
+# Testing Frameworks
+
+## Example: Types of Sampling Distribution
+
+```{r ex-distribution-overlay}
+library("ggplot2")
+
+ggplot(data.frame(x = c(-5, 5)), aes(x)) +
+  stat_function(fun = dnorm, 
+                      aes(colour = "Normal")) + 
+  stat_function(fun = dt, args = list(df = 1), 
+                      aes(colour = "t, df = 1")) +
+  stat_function(fun = dt, args = list(df = 2), 
+                      aes(colour = "t, df = 2")) +
+  stat_function(fun = dt, args = list(df = 3), 
+                      aes(colour = "t, df = 3")) +
+  stat_function(fun = dt, args = list(df = 5), 
+                      aes(colour = "t, df = 5")) +
+  stat_function(fun = dt, args = list(df = 10), 
+                      aes(colour = "t, df = 10")) +
+  stat_function(fun = dt, args = list(df = 20), 
+                      aes(colour = "t, df = 20")) +
+  labs(title = "PDFs for Normal and t Distributions", 
+       y = "f(x)",
+       x = "x",
+       colour = "Distributions") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+```
+
+## Example: Different Sample Groups
+
+From the graph, we think the two groups might be significantly different.
+
+How can we check though?
+
+```{r initial-height-dis}
+# Simulate data
+set.seed(183)
+n = 300
+tdata = data.frame(Sex = rep(c("Male", "Female"), each = n),
+                   Height = c(rnorm(n, 6.2), rnorm(n, mean=5)))
+
+# Compute mean statistics
+library("dplyr")
+data_means = tdata %>%
+  group_by(Sex) %>%
+  summarise(height_mean = mean(Height))
+               
+# Create a density plot of two groups                  
+library("ggplot2")
+ggplot(tdata, aes(x = Height, fill = Sex, color = Sex)) +
+    geom_density(alpha = 0.5) +
+    geom_vline(data = data_means, aes(xintercept = height_mean, color = Sex),
+               linetype = "dashed", size=1) + theme_bw() +
+  labs(title = "Comparison of Height Distributions between Sex",
+       y = "Density of Height Distribution")
+```
+
+Generate a boxplot as an alternative
+
+```{r alternative-plot}
+ggplot(tdata, aes(x = Sex, y = Height, fill = Sex, color = Sex)) +
+    geom_boxplot(alpha = 0.5) + theme_bw() +
+  labs(title = "Comparison of Height Distributions between Sex")
+```
+
+Would this graph be a good indicator of difference? 
+
+```{r height-graph-v2}
+set.seed(183)
+n = 300
+tdata = data.frame(Sex = rep(c("Male", "Female"), each = n),
+                   Height = c(rnorm(n, 5.2), rnorm(n, mean=5)))
+
+library("dplyr")
+data_means = tdata %>%
+  group_by(Sex) %>%
+  summarise(height_mean = mean(Height))
+
+library("ggplot2")
+ggplot(tdata, aes(x = Height, fill = Sex, color = Sex)) +
+    geom_density(alpha = 0.5) +
+    geom_vline(data = data_means, aes(xintercept = height_mean, color = Sex),
+               linetype = "dashed", size=1) + theme_bw() +
+  labs(title = "Comparison of Height Distributions between Sex",
+       y = "Density of Height Distribution")
+```
+
+## Example: Critical Regions for Hypotheses (two vs. one-sided) 
+
+Two-sided example
+
+```{r two-sided-vis-t-test}
+library("ggplot2")
+
+# Determine values for viewing t-distribution
+df = 20
+min_val = -5
+max_val = 5
+graph_bounds = data.frame(x = c(min_val, max_val))
+
+# Pick out significance levels
+alpha = 0.05
+lower_tail = alpha / 2
+upper_tail = 1 - alpha / 2
+
+# Calculate critical values
+lower_tail_crit = round(qt(lower_tail, df = df), digits = 3)
+upper_tail_crit = round(qt(upper_tail, df = df), digits = 3)
+
+# Graph the distribution with critical region
+g2 = ggplot(graph_bounds, aes(x = x)) +
+  stat_function(fun = dt, args = list(df = df)) + 
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(min_val, lower_tail_crit), geom = "area", fill = "blue") +
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(max_val, upper_tail_crit), geom = "area", fill = "blue") +
+  geom_vline(xintercept = c(lower_tail_crit, upper_tail_crit), linetype = "dashed", size=0.5) +
+  scale_x_continuous(breaks = c(lower_tail_crit, 0, upper_tail_crit)) +
+  labs(title = "Two-Sided t-Test",
+       subtitle = paste0("with alpha = ", alpha, "/2 and df = ", df),
+       x = "t-Value", y = "Density") +
+  theme(legend.position = "none", 
+        axis.text = element_text(size = 20)) + 
+  theme_bw()
+
+g2
+```
+
+One-sided example
+
+```{r one-sided-vis-t-test}
+# Pick out significance levels
+upper_tail = 1 - alpha
+upper_tail_crit = round(qt(upper_tail, df = df), digits = 3)
+
+# Graph the distribution with critical region
+ggplot(graph_bounds, aes(x = x)) +
+  stat_function(fun = dt, args = list(df = df)) + 
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(max_val, upper_tail_crit), geom = "area", fill = "blue") +
+  geom_vline(xintercept = upper_tail_crit, linetype = "dashed", size=0.5) +
+  
+  scale_x_continuous(breaks = c(0, upper_tail_crit)) +
+  labs(title = "One-Sided t-Test",
+       subtitle = paste0("with alpha = ", alpha, " and df = ", df),
+       x = "t-Value", y = "Density") +
+  theme(legend.position = "none", 
+        axis.text = element_text(size = 20)) + 
+  theme_bw()
+```
+
+## Example: Generating Sample Data
+
+```{r}
+# Set seed for reproducibility
+set.seed(881)
+
+# Generate data
+n = 10
+x1 = round(rnorm(n), 1)
+x2 = round(rnorm(n) + 1, 1)
+```
+
+## Example: Calculating a t-statistic
+
+```{r free-hand-t-calculation}
+# Compute means of each group
+x1_mu = mean(x1)
+x2_mu = mean(x2)
+
+# Compute length and degrees of freedom 
+n1 = length(x1)
+n2 = length(x2)
+ndf = n1 + n2 - 2
+
+# Calculate pooled variance
+s2 = ((n1 - 1) * var(x1) + (n2 - 1) * var(x2)) / ndf
+
+# Compute the t-statistic
+tstat = (mean(x1) - mean(x2)) /
+                sqrt(s2 * (1 / n1 + 1 / n2))
+```
+
+## Example: Floating Point Stability
+
+```{r numerics-problematic}
+# Numerics are problematic
+0.10 + 0.05 == 0.15
+
+# Allow for tolerance with numerics via an epsilon neighborhood
+all.equal(0.10 + 0.05, 0.15)
+
+# Lack of output stability though… 
+all.equal(0.12, 0.19)
+
+# Check for whether it is true
+isTRUE(all.equal(0.12, 0.19))
+```
+
+
+## Example: Calculate P-value
+
+Two-sided hypothesis p-value
+
+```{r calc-p-val-two-sided}
+two_sided_p = 2 * (1 - pt(abs(tstat), ndf))
+two_sided_p
+```
+
+Upper hypothesis p-value
+
+```{r calc-p-val-one-sided}
+one_sided_p = 1 - pt(tstat, ndf)
+one_sided_p
+```
+
+```{r alt-calc-pval-one-sided}
+# Alternatively, start from the right (upper) tail 
+# instead of the left (lower) tail.
+pt(tstat, ndf, lower.tail = FALSE)
+```
+
+Two-sided example
+
+```{r two-sided-vis-t-test-stat}
+library("ggplot2")
+
+# Determine values for viewing t-distribution
+df = 18
+min_val = -5
+max_val = 5
+graph_bounds = data.frame(x = c(min_val, max_val))
+
+# Pick out significance levels
+alpha = 0.05
+lower_tail = alpha / 2
+upper_tail = 1 - alpha / 2
+
+# Calculate critical values
+lower_tail_crit = round(qt(lower_tail, df = df), digits = 3)
+upper_tail_crit = round(qt(upper_tail, df = df), digits = 3)
+
+# Graph the distribution with critical region
+ggplot(graph_bounds, aes(x = x)) +
+  stat_function(fun = dt, args = list(df = df)) + 
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(min_val, lower_tail_crit), geom = "area", fill = "blue", alpha = 0.75) +
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(min_val, qt(two_sided_p, df = df)), geom = "area", fill = "orange", alpha = 0.75) +
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(max_val, upper_tail_crit), geom = "area", fill = "blue") +
+  geom_vline(xintercept = c(lower_tail_crit, upper_tail_crit), linetype = "dashed", size=0.5) +
+  geom_vline(xintercept = qt(two_sided_p, df = df), linetype="dotted", size=0.75, color = "orange") + 
+  scale_x_continuous(breaks = c(lower_tail_crit, 0, upper_tail_crit)) +
+  labs(title = "Two-Sided t-Test",
+       subtitle = paste0("with alpha = ", alpha, "/2 and df = ", df),
+       x = "t-Value", y = "Density") +
+  theme(legend.position = "none", 
+        axis.text = element_text(size = 20)) + 
+  theme_bw()
+```
+
+One-sided example
+
+```{r one-sided-vis-t-test-stat}
+# Pick out significance levels
+upper_tail = 1 - alpha
+upper_tail_crit = round(qt(upper_tail, df = df), digits = 3)
+
+# Graph the distribution with critical region
+ggplot(graph_bounds, aes(x = x)) +
+  stat_function(fun = dt, args = list(df = df)) + 
+  stat_function(fun = dt, args = list(df = df),
+                xlim = c(max_val, upper_tail_crit), geom = "area", fill = "blue") +
+    stat_function(fun = dt, args = list(df = df),
+                xlim = c(max_val, qt(1-one_sided_p, df = df)), geom = "area", fill = "orange", alpha = 0.75) +
+  geom_vline(xintercept = upper_tail_crit, linetype = "dashed", size=0.5) +
+  geom_vline(xintercept = qt(1-one_sided_p, df = df), linetype="dotted", size=0.75, color = "orange") + 
+  scale_x_continuous(breaks = c(0, upper_tail_crit)) +
+  labs(title = "One-Sided t-Test",
+       subtitle = paste0("with alpha = ", alpha, " and df = ", df),
+       x = "t-Value", y = "Density") +
+  theme(legend.position = "none", 
+        axis.text = element_text(size = 20)) + 
+  theme_bw()
+```
+
+
+
+## Example: Calculate Critical t-value
+
+```{r calc-t-val-two-sided}
+# Significance Level
+alpha = 0.05 
+
+# Critical value for two-sided test
+qt(1 - alpha/2, ndf)
+```
+
+```{r calc-t-val-onesided}
+# Significance Level
+alpha = 0.05 
+
+# Critical value for one-sided test
+qt(1 - alpha, ndf)
+```
+
+
+## Example: Significant values for a t-Distribution table
+
+Create a t-distribution table
+
+```{r build-t-table}
+alpha = c(0.4, 0.25, 0.1, 0.05, 0.025, 0.01, 0.005, 0.0005)
+df = c(1:30, 40, 60, Inf)
+t_table = outer(df, alpha, function(df, alpha) qt(1 - alpha, df = df))
+rownames(t_table) = df
+colnames(t_table) = alpha
+knitr::kable(t_table)
+```
+
+## Example: t-test Implemented
+
+To begin, we start by implementing the algorithm as if it just another
+function. After we have a stable implementation, then we can being adding
+in additional features.
+
+```{r my-test-imp}
+my_ttest = function(x1, x2, 
+                    test = c("two-sided", "lower", "upper"),
+                    alpha = 0.05) {
+  
+  # Force `test` to hold a pre-defined value of either:
+  # "two-sided", "lower", or "upper"
+  test = match.arg(test)
+  
+  # Compute length and degrees of freedom 
+  n1 = length(x1)
+  n2 = length(x2)
+  ndf = n1 + n2 - 2
+  
+  # Calculate t-statistic 
+  s2 = ((n1 - 1) * var(x1) + (n2 - 1) * var(x2)) / ndf
+  tstat = (mean(x1) - mean(x2)) / sqrt(s2 * (1 / n1 + 1 / n2))
+  
+  # Compute tail probability 
+  tail_prob = switch(test,
+                     "two-sided" = 2 * (1 - pt(abs(tstat), ndf)),
+                     "lower" = pt(tstat, ndf),
+                     "upper" = 1 - pt(tstat, ndf))
+  
+  # Format and return results 
+  results = list(tstat = tstat, df = ndf, reject = tail_prob < alpha, prob = tail_prob)
+  return(results)
+}
+```
+
+Verify output of unpooled function against base R implementation
+
+```{r simulate-data}
+# Simulate some data
+set.seed(881)
+n = 10
+x1 = round(rnorm(n) , 1)
+x2 = round(rnorm(n) + 1 , 1)
+test_result = my_ttest(x1, x2)
+test_result
+
+# Check against built in
+all.equal(test_result[-3], 
+          t.test(x1,x2, var.equal = TRUE)[1:3], 
+          check.attributes = FALSE)
+```
+

@@ -1,0 +1,308 @@
+---
+title: "Bootstrap"
+author: "JJB + Course"
+date: "09/28/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Non-parametric Bootstrap
+
+## Example: Bootstrapping subject-heights mean
+
+```{r bootstrap-heights, cache = TRUE}
+# Step 1: Obtain samples from population
+sample_data = data.frame(id     = c(1, 2, 3, 4, 5),
+                         sex    = c("M","F","F","M","M"),
+                         height = c(6.1, 5.5, 5.2, 5.6, 5.9))                            
+theta_hat = mean(sample_data$height)   # Compute the mean for the height data
+n_obs = nrow(sample_data)              # Length of data
+boot_iter = 500L                       # Number of bootstrap iterations
+theta_star = rep(NA, boot_iter)        # Bootstrapped estimate of theta
+
+for (i in seq_len(boot_iter)) {
+  set.seed(11882 + i)                  # Set seed for reproducibility
+  # Step 2: Randomly sample observations positions from 1 to n_obs
+  indexes = sample(n_obs, n_obs, replace = TRUE)
+
+  # Extract out the observation positions
+  sample_data_star = sample_data[indexes,, drop = FALSE]
+
+  # Step 3: Compute the desired statistic on the bootstrapped values
+  theta_star[i] = mean(sample_data_star$height)
+  
+  
+} # Step 4: Repeat until i matches boot_iter 
+
+# See first portion of output
+head(theta_star)
+
+# See compute the mean of the bootstrapped distribution
+mean(theta_star)
+
+# Compare with the mean of the population sample
+theta_hat
+```
+
+## Examples: Compute Percentiles
+
+```{r example-quantiles}
+# Sample Data
+x = c(1, 2, 3, 4, 5, 6)
+
+quantile(x, 
+  probs = c(0.25, 0.5, 0.75, 1)
+)
+
+# Median is the 50% quantile
+median(x)
+```
+
+### Example: Distribution Quantiles
+
+```{r my-dist-quantile}
+# Retrieve real quantiles
+qnorm(c(0.25, 0.5, 0.75, 1))
+```
+
+
+### Example: Quantile CI
+
+```{r ci-bootstrap-quantile, cache = TRUE, dependson="bootstrap-heights"}
+alpha    = 0.05
+alpha / 2
+1 - alpha / 2
+ci_range = quantile(theta_star, probs = c(alpha / 2, 1 - alpha / 2))
+ci_range
+```
+
+
+## Example: Plotting Bootstrapped Samples
+
+```{r view-bootstrap-samples}
+# Graph results
+library("ggplot2")
+
+graph_bootstrap = data.frame(iter       = seq_along(theta_star),
+                             theta_star = theta_star)
+ggplot(graph_bootstrap) + 
+  geom_histogram(aes(theta_star)) + labs(
+    title = "Non-parametric Bootstrapped Data",
+    sub   = "Example simulation",
+    x     = "Values of Theta^*",
+    y     = "Frequency of Theta^* Values"
+  )
+```
+
+
+
+## Exercise: Standard Deviation of `iris`' `Sepal.Width`
+
+```{r}
+# Data set is included with base R
+head(iris)
+
+# Step 1: Obtain samples from population
+sample_data = iris
+
+# Extract all of the Sepal.Width observations
+# grab observations
+```
+
+```{r view-bootstrap}
+# Graph results
+library("ggplot2")
+
+graph_bootstrap = data.frame(iter       = seq_along(theta_star),
+                             theta_star = theta_star)
+ggplot(graph_bootstrap) + 
+  geom_histogram(aes(theta_star)) + labs(
+    title = "Non-parametric Bootstrapped Data",
+    sub   = "Example simulation",
+    x     = "Values of Theta^*",
+    y     = "Frequency of Theta^* Values"
+  )
+```
+
+
+
+
+
+```{r}
+
+m = function(x, z) {
+  a = 1 + z
+  b = x + a
+  a + b
+}
+
+```
+
+
+## Example: Non-parametric bootstrap with `boot`
+
+```{r r-boot-pkg, eval = FALSE}
+# install.packages('boot')
+library('boot')
+
+# Create a data.frame w/ distance data
+nsim_obs = 100
+
+# Set seed to reproduce generated data
+set.seed(981)
+problem_data = data.frame(distance = rchisq(nsim_obs, df = 5)
+                          # other data here 
+)
+
+# Create a sampling or subset function for the data
+sampling_function = function(d, ind) {
+  # Extract out the observation positions (this allows for multiple indices
+  # to be selected)
+  problem_data_star = problem_data[ind,, drop = FALSE]
+  
+  # Compute the desired statistic on the bootstrapped data
+  mean(problem_data_star$distance)
+}
+
+# Run the bootstrapping procedure
+booted_means = boot(
+  data = problem_data,
+  statistic = sampling_function,
+  R = 200                         # Number of iterations
+)
+
+# Calculate different confidence intervals
+boot.ci(booted_means)
+
+# Show underlying statistic distribution (e.g. t is the mean statistic)
+plot(booted_means)
+```
+
+
+# Parametric Bootstrap
+
+## Example: Parametric bootstrap with `sd` and `mean` of a Normal Distribution
+
+```{r r-parametric, cache = TRUE}
+sample_values = rnorm(1000)           # Step 1: Obtain samples from known
+                                      # population distribution.
+                                      # Step 2: Obtain statistics
+theta_mean_hat = mean(sample_values)  # Compute sample mean
+theta_sd_hat = sd(sample_values)      # Compute sample standard deviation
+
+n_obs = length(sample_values)         # Length of data
+boot_iter = 250L                      # Number of bootstrap iterations
+theta_mean_star = rep(NA, boot_iter)  # Bootstrapped estimate of mean
+theta_sd_star = rep(NA, boot_iter)    # Bootstrapped estimate of standard dev
+
+for (i in seq_len(boot_iter)) {
+  set.seed(385 + i)                   # Set seed for reproducibility
+
+  # Step 3: Randomly generate observations under distribution
+  sample_values_star = rnorm(n_obs, mean = theta_mean_hat, sd = theta_sd_hat )
+
+  # Step 4: Compute the desired statistic on the bootstrapped values
+  theta_mean_star[i] = mean(sample_values_star)
+  theta_sd_star[i] = sd(sample_values_star)
+
+} # Step 5: Repeat until i matches boot_iter 
+
+mean(theta_mean_star)
+theta_mean_hat
+mean(theta_sd_star)
+theta_sd_hat
+```
+
+```{r my-data}
+# install.packages("tidyr")
+library("tidyr")
+
+graph_bootstrap = data.frame(iter            = seq_len(boot_iter),
+                             theta_mean_star = theta_mean_star,
+                             theta_sd_star   = theta_sd_star)
+
+# Tidy data
+tidy_bootstrap = gather(graph_bootstrap,
+                        key = theta_type_estimated, value = theta_star,
+                        theta_mean_star:theta_sd_star)
+
+theta_vlines = data.frame(theta_type_estimated = c("theta_mean_star", "theta_sd_star"), 
+                          theta_val = c(0, 1))
+
+library("ggplot2")
+ggplot(tidy_bootstrap) + 
+  geom_histogram(aes(theta_star)) +
+  geom_vline(data = theta_vlines,
+             aes(xintercept = theta_val, color = theta_type_estimated)) +
+  facet_wrap(~theta_type_estimated) + 
+  labs(
+    title = "Non-parametric Bootstrapped Data",
+    color = "Type of Theta Estimated",
+    sub   = "Example simulation",
+    x     = "Values of Theta^*",
+    y     = "Frequency of Theta^* Values"
+  ) + theme_bw()
+```
+
+## Exercise: Parametric bootstrap with `mean`, `sd`, and `median` of a Poisson Distribution
+
+Estimate the `mean`, `sd`, and `median` of a Lambda distribution with an initial
+parameter of `lambda = 3`.
+
+```{r r-parametric-pois, cache = TRUE, eval = FALSE}
+sample_values = rpois(1000, lambda = 3)  # Step 1: Obtain samples from known
+                                         # population distribution.
+                                         # Step 2: Obtain statistics
+theta_mean_hat = mean(sample_values)     # Compute sample mean
+theta_sd_hat = sd(sample_values)         # Compute sample standard deviation
+theta_median_hat = median(sample_values) # Compute sample median
+
+
+n_obs = length(sample_values)         # Length of data
+boot_iter = 250L                      # Number of bootstrap iterations
+theta_mean_star = rep(NA, boot_iter)  # Bootstrapped estimate of mean
+theta_sd_star = rep(NA, boot_iter)    # Bootstrapped estimate of standard dev
+
+theta_median_star = rep(NA, boot_iter)# Bootstrapped estimate of median
+
+
+for (i in seq_len(boot_iter)) {
+  set.seed(385 + i)                   # Set seed for reproducibility
+
+  # Step 3: Randomly generate observations under distribution
+  sample_values_star = rpois(n_obs, lambda = theta_mean_hat )
+
+  # Step 4: Compute the desired statistic on the bootstrapped values
+  theta_mean_star[i] = mean(sample_values_star)
+  theta_sd_star[i] = sd(sample_values_star)
+  theta_median_star[i] = median(sample_values_star)
+
+} # Step 5: Repeat until i matches boot_iter 
+
+mean(theta_mean_star)
+theta_mean_hat
+mean(theta_sd_star)
+theta_sd_hat
+mean(theta_median_star)
+theta_median_hat
+
+```
+
+
+```{r overview-data, eval = FALSE}
+n_obs
+
+theta_mean_star
+
+sample_values_star
+
+summary(sample_values_star)
+```
+

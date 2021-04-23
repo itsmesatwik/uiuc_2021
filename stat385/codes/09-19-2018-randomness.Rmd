@@ -1,0 +1,416 @@
+---
+title: "Randomness"
+author: "JJB + Course"
+date: "09/19/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# RNG
+
+## Example: Random Numbers
+
+```{r}
+set.seed(55)
+rnorm(1)
+
+set.seed(55)
+rnorm(1)
+```
+
+
+```{r}
+0 /10
+6 / 10
+9 / 10
+
+```
+
+
+## Example: Modulus
+
+```{r example-mod}
+12 %% 7
+```
+
+```{r create-mod-combination-table}
+outer(1:5, 1:5, `*`)
+```
+
+```{r format-mod-table}
+mod_table = data.frame(outer(1:9, 2:9, `%%`))
+colnames(mod_table) = paste0("mod ", seq_len(ncol(mod_table)) + 1)
+rownames(mod_table) = paste0("x = ", seq_len(nrow(mod_table)))
+
+knitr::kable(mod_table)
+```
+
+## Example: LCM
+
+```{r lcm-method}
+# Setup values
+a = 5181215173
+c = 12581
+m = 2^32
+
+# Initial Seed
+seed = as.numeric(Sys.time()) * 1000
+
+# Pre-allocation of numeric vector
+x = numeric(length = 2)
+  
+# Set initial value
+x[1] = seed
+x[2] = (a * x[1] + c) %% m
+
+x
+
+# Real number
+r = x[2]/m 
+
+r
+```
+
+
+# Sampling
+
+## Example: Sample without Replacement
+
+
+```{r sample-without-replacement-numbers}
+# Set seed for reproducibility
+set.seed(90210)
+
+# Sample values without replacement
+sample(x = 8, size = 4, replace = FALSE)
+
+# Sample values without replacement
+sample(x = 8, size = 8, replace = FALSE)
+
+# Sample values without replacement
+# sample(x = 8, size = 10, replace = FALSE)
+```
+
+```{r sample-without-replacement-characters}
+# Set seed for reproducibility
+set.seed(42)
+
+# Sample values without replacement
+sample(x = c("heads", "tails"), size = 1, replace = FALSE)
+```
+
+### Exercise: Die Roll
+
+
+```{r ex-sample-w-o-replace}
+# Set a seed to control reproducibility
+set.seed(385)
+
+```
+
+
+## Example: Sampling with Replacement
+
+```{r sample-with-replacement-numbers}
+# Set seed for reproducibility
+set.seed(5318008)
+
+# Sample numbers with replacement
+sample(x = 10, size = 20, replace = TRUE)
+```
+
+```{r sample-with-replacement-characters}
+# Set seed for reproducibility
+set.seed(376006)
+
+# Sample characters with replacement
+sample(x = c("heads", "tails"), size = 10, replace = TRUE, prob = c(0.4, 0.6))
+```
+
+
+### Exercise
+
+Create a call to sample such that it can roll a "loaded" six-sided die
+twice with probabilities:
+
+1 := 0.1, 2 := 0.3, 3 = 0.1, 4 := 0.15, 5 := 0.15, 6 := 0.2
+
+```{r rng-probs-loaded-dice}
+set.seed(8888)
+
+
+probs_values = c(0.1, 0.3, 0.1, 0.15, 0.15, 0.2)
+
+sum(probs_values)
+```
+
+```{r}
+output = sample(x = 6, size = 10, replace = TRUE, prob = c(0.1, 0.3, 0.1, 0.15, 0.15, 0.2))
+```
+
+```{r}
+table(output)
+```
+
+```{r}
+prop.table(table(output))
+probs_values
+```
+
+
+
+```{r}
+output = sample(x = 6, size = 1000, replace = TRUE, prob = c(0.1, 0.3, 0.1, 0.15, 0.15, 0.2))
+```
+
+```{r}
+table(output)
+```
+
+```{r}
+prop.table(table(output))
+probs_values
+```
+
+# Probability Distributions
+
+## Example: `d`, `p`, `q`, `r` Distribution Functions
+
+```{r example-distribution-calls}
+# Normal PDF
+dnorm(c(-1, 0, 1))
+
+# Normal CDF
+pnorm(c(-1, 0, 1))
+
+# Normal iCDF
+qnorm(c(0.15, 0.5, 0.84))
+
+# Normal RNG
+set.seed(15)   # Set seed to ensure reproducibility
+rnorm(2)
+```
+
+
+### Probability Density Function 
+
+```{r standard-normal}
+library("ggplot2")
+
+ggplot(data.frame(x = c(-5, 5)), aes(x)) +
+  stat_function(fun = dnorm) + 
+  labs(title = "Normal: PDF", y = "f(x)", x = "x") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+```
+
+
+```{r dnorm-ex}
+library("ggplot2")
+
+ggplot(data.frame(x = c(-5, 5)), aes(x)) +
+  stat_function(fun = dnorm)+ 
+  stat_function(fun = dnorm, 
+                xlim = c(-5, 1.96),
+                geom = "area",
+                fill = "blue") +
+  geom_vline(xintercept = 1.96, color = "orange") +
+  labs(title = "Normal: PDF", y = "f(x)", x = "x") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+
+```
+
+### Cumulative Density Function 
+
+```{r pnorm-ex-v2}
+ggplot(data.frame(x = c(-5, 5)), aes(x)) +
+  stat_function(fun = pnorm) +
+  geom_point(data = data.frame(x = 1.96, y = pnorm(1.96)), aes(y = y), 
+             color = "blue", size = 3) +
+  geom_vline(xintercept = 1.96, color = "orange") +
+  labs(title = "Normal: CDF", y = "F(x)", x = "x") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+```
+
+### Quantile Function 
+
+```{r qnorm-ex}
+ggplot(data.frame(x = c(0, 1)), aes(x)) +
+  stat_function(fun = qnorm) +
+  labs(title = "Normal: Quantile", y = "x", x = "F(x)")  + 
+  geom_point(data = data.frame(x = 0.975, y = qnorm(0.975)), aes(y = y), 
+             color = "blue", size = 3) +
+  geom_vline(xintercept = 0.975, color = "orange") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+```
+
+### Quantile Function - Z-Score
+
+```{r qnorm-ex-zscore}
+ggplot(data.frame(x = c(0, 1)), aes(x)) +
+  stat_function(fun = qnorm) +
+  labs(title = "Normal: Quantile", y = "x", x = "F(x)")  + 
+  geom_point(data = data.frame(x = 0.975, y = qnorm(0.975)), aes(y = y), 
+             color = "blue", size = 3) +
+  geom_vline(xintercept = 0.975, color = "orange") + 
+  geom_hline(yintercept = qnorm(0.975), color = "red") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+
+```
+
+
+```{r pnorm-ex}
+ggplot(data.frame(x = c(-5, 5)), aes(x)) +
+  stat_function(fun = pnorm) +
+  geom_point(data = data.frame(x = 1.96, y = pnorm(1.96)), aes(y = y), 
+             color = "blue", size = 3) +
+  geom_hline(yintercept = 0.975, color = "orange") + 
+  geom_vline(xintercept = qnorm(0.975), color = "red") + 
+  labs(title = "Normal: CDF", y = "F(x)", x = "x") + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+```
+
+
+
+### Random Number Generation Function 
+
+```{r rnorm-ex}
+set.seed(1)
+ggplot(data.frame(x = rnorm(1000)), aes(x = x)) +
+  geom_histogram(aes(y = ..density..), fill = "orange") +
+  stat_function(fun = dnorm, color = "blue") +
+  geom_vline(xintercept = 0, color = "red") + 
+  labs(title = "Normal: Random Numbers", y = "f(x)", x = "Samples")  + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 13),
+        plot.title = element_text(size = 16))
+```
+
+### Exercise: Finding quantiles
+
+```{r}
+
+# 0.5 => 0 and that is the half-way point 
+# 0.95 => 1-side hypothesis testing critical value
+# 0.975 => 2-side hypothesis testing scheme. 
+
+```
+
+
+## Example: Hypothesis Test
+
+```{r coin-flip-proportion}
+# Configuration
+n = 1000
+p0 = 0.5
+alpha = 0.05
+
+# Simulation
+# Set seed to control reproducibility
+set.seed(1337)
+x = rbinom(n, 1, 0.5)
+
+# Calculate test statistic
+p_hat = sum(x) / n
+z_score = (p_hat - p0) /
+sqrt(p0 * (1 - p0) / n)
+z_crit = qnorm(1 - alpha / 2)
+
+# Check if test statistic is in critical region
+z_score > z_crit
+
+
+z_oneprop = function(p_hat, p0, n, alpha, sides) {
+  z_score = (p_hat - p0) / sqrt(p0 * (1-p0) / n)
+  if(sides == "both") { 
+    alpha = alpha /2 
+  } 
+  z_crit = qnorm(1 - alpha )
+  
+  reject_stat = z_score > z_crit
+
+  if(reject_stat) {
+    message("Given a z score of ", z_score, ", we reject the null hypothesis as it is greater than critical z value", z_crit, ".")
+  } else {
+    message("Do not reject the null hypothesis.")
+  }
+  
+}
+
+```
+
+# Caches
+
+## Example: Cache
+
+To enable a cache, add to the code chunk the option of `cache = TRUE`.
+
+```{r cache-large-computation, cache = TRUE} 
+x = rnorm(10000*10000)
+system.time({
+    sorted_x = sort(x)
+}) 
+``` 
+
+Notice how long it took for the cache to be created the first time the document was knit. However, on subsequent knits, the document is instantaneously knit.
+
+## Example: Caution Required with Randomness
+
+Within this example, we show what happens when randomness appears in a cache
+while not being stored itself. 
+
+When the document is **first** knit, the values in the cached code
+chunk (`cached-calc`) are stored. However, the generation of the numbers used
+in the cached chunk are not saved. Thus, when the document is run for
+the **second** time the output of `x` will differ between code chunks.
+
+```{r sampling} 
+a = rnorm(3)
+a
+``` 
+
+```{r cached-calc, cache = TRUE} 
+a
+b = a + 2 
+b
+``` 
+
+## Example: Adding a Dependency
+
+To ensure reproducibility under the previous-setup, we opt to require a **dependency**
+on the prior chunk. Thus, each time the document is knit if the `random-sample`
+code changes, the latter cached chunk is updated. 
+
+```{r random-sample, cache = TRUE} 
+x = rnorm(3)
+x
+``` 
+
+```{r ex-dependson-cached, cache = TRUE, dependson = "random-sample"} 
+x
+y = x + 2 
+y
+``` 
+
+

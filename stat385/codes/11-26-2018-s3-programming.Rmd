@@ -1,0 +1,644 @@
+---
+title: "S3 Objects"
+author: "JJB + Course"
+date: "11/26/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# S3 Objects
+
+## Example: Use of classes
+
+```{r}
+x = data.frame(grade = c("A", "B"), pts = c(95, 88))
+
+class(x)
+
+attributes(x)
+
+unclass(x)
+```
+
+## Example: S3 Object Construction
+
+Option 1: Create and assign class
+```{r}
+aj = structure(list(), 
+               class = "student")
+```
+
+Option 2: Create object, then set class
+
+```{r}
+sai = list()
+class(sai) = "student"
+```
+
+Both objects will be equal since:
+
+1. there is no contents within the `list`, and
+2. they share the same class.
+
+```{r}
+all.equal(sai, aj)
+```
+
+## Example: Inheritance
+
+We generally prefer some level of hierarchy. Here, we can check if a class
+contains another.
+
+```{r}
+# Construct the aj object from the student class
+aj = structure(list(), class = "student") 
+
+# Check for a class
+inherits(aj, "student")
+
+inherits(aj, "list")
+```
+
+Even though the internal contents of `student` is a `list`, the class is
+not explicitly given during the construction of the `aj` object. Thus, there
+is no inheritance.
+
+## Example: Informal
+
+Objects can easily have their class changed. There are no built-in mechanisms
+to prevent this kind of manipulation. 
+
+```{r}
+# Construct a student object
+qihui = structure(list(),
+               class = "student") 
+
+# Corrupting an object
+class(qihui) = "data.frame"
+
+# View result
+qihui
+```
+
+
+## Example: Constructors
+
+The goal behind a constructor is to ensure a _uniform_ definition of the class
+is always met. 
+
+```{r}
+# Set up constructors for the class of human and instructor
+new_human = function(first_name) {
+   human_obj = structure(list(first_name = first_name), class = "human")
+   return(human_obj)
+}
+
+new_instructor = function(first_name, course) {
+   instructor_obj = structure(list(first_name = first_name, course = course),
+                                  class = c("instructor","human"))
+   return(instructor_obj)
+}
+```
+
+## Exercise: Implement Constructor for Student
+
+```{r}
+new_student = function(first_name, course, grade) {
+   instructor_obj = structure(
+     list(first_name = first_name, course = course, grade = grade),
+     class = c("student", "instructor","human"))
+   return(instructor_obj)
+}
+```
+
+```{r}
+new_student("Anthony", "STAT 385", "A+++++++++")
+```
+
+```{r}
+new_student("Kyle", "STAT 385", "A++")
+```
+
+
+## Example: _R_'s use of generic functions
+
+Some common generics
+
+```{r, eval = FALSE}
+summary(object, ...)
+print(x, ...)
+plot(x, y, ...)
+mean(x, ...)
+```
+
+These dispatch to a generic function defined for a class
+
+```{r, eval = FALSE}
+generic.class(x, ...) 
+```
+
+Implemented classes for mean
+
+```{r}
+methods(mean)
+```
+
+## Example: Use of ellipsis
+
+Note: Ellipsis can be used to have an infinite amount of parameters or avoid
+explicitly declaring what each parameter should be named.
+
+```{r}
+# Definition of min
+min
+
+# Multiple parameters
+min(3:9, -2, 1002, 58)
+```
+
+## Example: Implementing a generic via `my_generic()`
+
+```{r}
+# Setting up a generic
+my_generic = function(x, ...) { 
+  UseMethod("my_generic") 
+}
+
+# Method for handling a data.frame object
+my_generic.data.frame = function(x, ...) { 
+   message("This is a data.frame")
+}
+
+# Call generic
+my_generic(data.frame())
+```
+
+```{r, eval = FALSE}
+my_generic(1)
+# Error in UseMethod("my_generic") : 
+#   no applicable method for 'my_generic' applied to an object of class "c('double',  'numeric')"
+```
+
+```{r}
+# Method for handling a data.frame object
+my_generic.numeric = function(x, ...) { 
+   message("The input is a vector with a data type of numeric.")
+}
+my_generic(1)
+
+```
+
+```{r}
+my_generic(3.14)
+
+my_generic(data.frame(a = 1, b = 2))
+```
+
+
+
+
+## Example: Implementing a generic via `roles()`
+
+Let's implement a generic for working with the `human`, `instructor`, and `student`
+classes.
+
+```{r}
+# Create a generic for `role`
+role = function(x, ...) { 
+  UseMethod("role") 
+}
+
+# Create a role method for class instructor
+role.instructor = function(x, ...) {             
+  cat("Instructor ", x$first_name, ", you're teaching ", x$course , " this semester.", sep = "")
+}
+
+# Create a role method for class human 
+role.human = function(x, ...) {             
+  cat("Hi there human ", x$first_name, "!", sep = "")
+}
+
+```
+
+Aside: Why are we using `$` to access values?
+
+If we have an instructor, we'll be directed to the instructor role. Else, if we
+have a human, we'll go over to the human role. 
+
+```{r}
+jjb = new_instructor("James", "STAT 385")
+jjb
+
+role(jjb)
+
+tw = new_human("Teng")
+tw
+role(tw)
+
+nw = new_student("Nick", "STAT 385", "A")
+nw
+```
+
+
+
+## Exercise: Exploring S3
+
+Try passing an object with the student class into `role()`, what happens? Why?
+
+```{r}
+nw = new_student("Nick", "STAT 385", "A")
+nw
+
+role(nw)
+# $first_name
+# [1] "Nick"
+# 
+# $course
+# [1] "STAT 385"
+# 
+# $grade
+# [1] "A"
+# 
+# attr(,"class")
+# [1] "student"    "instructor" "human"     
+# Instructor Nick, you're teaching STAT 385 this semester.
+```
+
+```{r}
+# Create a role method for class human 
+role.student = function(x, ...) {             
+  cat("Greetings and Salutations ", x$first_name, "! Welcome to ", x$course, ". I believe you have an ", x$grade, " in the course.", sep = "")
+}
+
+role(nw)
+```
+
+Try now with `role(3)`, what happens?
+
+```{r, eval = FALSE}
+role(3)
+```
+
+Construct a `role.default(x, ...)` and try again.
+
+```{r}
+role.default = function(x, ...) {
+  stop("We do not presently support this class.")
+}
+```
+
+```{r, eval = FALSE}
+role(3)
+# Error in role.default(3) : We do not presently support this class.
+```
+
+# Unpaired (Two Sample) t-Test
+
+## Example: t-test Implemented
+
+To begin, we start by implementing the algorithm as if it just another
+function. That is, we opt not to try to impose any kind of S3 structure to it. 
+After we have a stable implementation, then we can being adding in additional
+features.
+
+```{r}
+my_ttest = function(x1, x2, 
+                    test = c("two-sided", "lower", "upper"),
+                    alpha = 0.05) {
+  
+  # Force `test` to hold a pre-defined value of either:
+  # "two-sided", "lower", or "upper"
+  test = match.arg(test)
+  
+  # Compute length and degrees of freedom 
+  n1 = length(x1)
+  n2 = length(x2)
+  ndf = n1 + n2 - 2
+  
+  # Calculate t-statistic 
+  s2 = ((n1 - 1) * var(x1) + (n2 - 1) * var(x2)) / ndf
+  tstat = (mean(x1) - mean(x2)) / sqrt(s2 * (1 / n1 + 1 / n2))
+  
+  # Compute tail probability 
+  tail_prob = switch(test,
+                     "two-sided" = 2 * (1 - pt(abs(tstat), ndf)),
+                     "lower" = pt(tstat, ndf),
+                     "upper" = 1 - pt(tstat, ndf))
+  
+  # Format and return results 
+  results = list(tstat = tstat, df = ndf, reject = tail_prob < alpha, prob = tail_prob)
+  return(results)
+}
+```
+
+Verify output of unpooled function against base R implementation
+
+```{r}
+# Simulate some data
+set.seed(881)
+n = 10
+x1 = round(rnorm(n) , 1)
+x2 = round(rnorm(n) + 1 , 1)
+test_result = my_ttest(x1, x2)
+test_result
+
+# Check against built in
+all.equal(test_result[-3], 
+          t.test(x1,x2, var.equal = TRUE)[1:3], 
+          check.attributes = FALSE)
+```
+
+## Example: Implementing `my_ttest()` with S3 Objects
+
+First, we create a generic function.
+
+```{r}
+# Create a generic for `my_ttest`
+my_ttest = function(x, ...) {
+  UseMethod("my_ttest") 
+}
+```
+
+Second, we implement the method functions for each kind of class we wish for
+our generic to implement.
+
+```{r}
+# Implement methods for objects to subset data.
+my_ttest.matrix = function(x, ... ) { my_ttest(x[, 1], x[, 2], ... ) } 
+my_ttest.data.frame = function(x, ... ) { my_ttest(x[, 1], x[, 2], ... ) } 
+my_ttest.list = function(x, ... ) { my_ttest(x[[1]], x[[2]], ... ) } 
+my_ttest.factor = function(x, ... ) { 
+  lev = levels(x)
+  my_ttest(x[x == lev[1]], x[x == lev[2]])
+} 
+```
+
+Third, we slightly change our initial function to respond to the implements
+by changing two items:
+
+1. the name of the function, e.g. `my_ttest` -> `my_ttest.default()`
+2. the return type of the function, e.g. `structure(list(), class="my_ttest")`
+
+```{r}
+my_ttest.default = function(x1, x2,
+                            test = c("two-sided", "lower", "upper"), 
+                            alpha = 0.05) {
+  # Force `test` to hold a pre-defined value
+  test = match.arg(test)
+  # Compute length and degrees of freedom 
+  n1 = length(x1); n2 = length(x2); ndf = n1 + n2 - 2
+  # Calculate t-statistic 
+  s2 = ((n1 - 1) * var(x1) + (n2 - 1) * var(x2)) / ndf
+  tstat = (mean(x1) - mean(x2)) / sqrt(s2 * (1 / n1 + 1 / n2))
+  # Compute tail probability 
+  tail_prob = switch(test,
+                     "two-sided" = 2 * (1 - pt(abs(tstat), ndf)),
+                     "lower" = pt(tstat, ndf),
+                     "upper" = 1 - pt(tstat, ndf))
+  # Format and return results 
+  results = structure(list(tstat = tstat, df = ndf, reject = tail_prob < alpha,                                            prob = tail_prob), class = "my_ttest")
+  return(results)
+}
+```
+
+The main difference between the approaches is we now have a specific class
+attribute that contains `"my_ttest"`. We can use this to _format_ the output.
+
+Note the `$class` item:
+
+```{r}
+test_result = my_ttest(x1, x2)
+attributes(test_result)
+```
+
+Everything else is still identical
+
+```{r}
+# Check against built in
+all.equal(test_result[-3], 
+          t.test(x1,x2, var.equal = TRUE)[1:3], 
+          check.attributes = FALSE)
+```
+
+## Example: Customizing output
+
+
+```{r}
+# Create extend the base R 
+# print method for my_ttest
+print.my_ttest = function(x, ... ) {
+    
+  # Only print the first two items 
+  print(unlist(x[1:2]))
+
+  # Return the original object silently 
+  invisible(x) 
+}
+
+test_result
+```
+
+
+## Example: Customizing Multiple Outputs
+
+Within here, we perform a further extension of Base R's `summary` and `print`
+methods for `my_ttest`. Note, we're extending
+
+```{r}
+# Create extend the base R summary method for my_ttest
+summary.my_ttest = function(object, ... ) {
+ structure(object, 
+           class = c("sum_my_ttest", class(object)))
+  
+}
+
+# Custom print method for summary of my_ttest
+print.sum_my_ttest = function(x, ...) {
+  cat("Unpaired (Two-Sample) t-Test Results\n")
+  cat("t =", format(x$tstat, ... ), "on", x$ndf, "d.f.\n")
+  cat("p-value:", format(x$prob, ...), "\n") 
+  cat("Null hypothesis is", if(!x$reject) "not" else "", "rejected.", "\n") 
+  invisible(x)
+}
+```
+
+When summary is called, we are not saving the results.
+Thus, the print method defined above is immediately called.
+
+```{r}
+summary(test_result)
+```
+
+Here, we can capture the function return and re-use it.
+
+```{r}
+res = summary(test_result)
+res
+```
+
+
+# Constructing a Linear Regression Generic
+
+## Example: Writing a `my_lm()` function - Generic Dispatcher
+
+To begin, we start with the basic definition for a generic method.
+
+```{r make_generic}
+my_lm = function(x, ...){ 
+  UseMethod("my_lm") 
+}
+```
+
+**Note:** Under this approach, we can extend `my_lm` to work with 
+`formula` (e.g `y ~ x`)
+
+## Example: Writing a `my_lm()` function - Class Constructor
+
+Next, we'll make a constructor for the class results:
+
+```{r}
+new_my_lm = function(beta_hat, cov_mat, sigma2, df) {
+  structure(list(coefs  = beta_hat, 
+                cov_mat = cov_mat, 
+                sigma   = sqrt(sigma2), 
+                df      = df),
+            class = c("my_lm", "list"))
+}
+```
+
+## Example: Writing a `my_lm()` function - Dispatch on Formula
+
+```{r}
+my_lm.formula = function(formula, data = list(), ...) {
+
+    # Create a design matrix
+    m_info = model.frame(formula = formula, data = data)
+    X = model.matrix(attr(m_info, "terms"), data = m_info)
+    
+    # Extract response
+    y = model.response(m_info)
+    
+    return(my_lm(X, y, ...))
+}
+```
+
+## Writing a `my_lm()` function - Dispatch on Matrix
+
+```{r}
+my_lm.matrix = function(X, y, ...) {
+  # Translation of (X'X)^-1 X' y
+  beta_hat = solve(t(X) %*% X) %*% t(X) %*% y
+  
+  # Compute the Degrees of Freedom
+  df = nrow(X) - ncol(X)   # n - p 
+
+  # Compute the Standard Deviation of the Residuals
+  sigma2 = sum((y - X %*% beta_hat) ^ 2) / df
+  
+  # Compute the Covariance Matrix
+  # Cov(Beta_hat) = sigma^2 * (X' X)^(-1)
+  cov_mat = sigma2 * solve(t(X) %*% X)
+  
+  # Make name symmetric in covariance matrix
+  rownames(cov_mat) = colnames(X)
+  colnames(cov_mat) = colnames(X)
+  
+  # Return a list
+  new_my_lm(beta_hat, cov_mat, sigma2, df)
+}
+```
+
+**Note:** The implementation is not stable if multicollinearity is present. 
+Use [QR decomposition]( https://bookdown.org/rdpeng/advstatcomp/textbooks-vs-computers.html).
+
+
+## Writing a `my_lm()` function - Default Method
+
+```{r}
+my_lm.default = function(object, ...){
+  
+  stop("Cannot operate on ", class(object), ".")
+
+}
+```
+
+## Example: Writing a `print.my_lm()` function
+
+We can hook the `my_lm` class directly into generic `print` function
+
+```{r}
+print.my_lm = function(x, ...) {
+  cat("\nCoefficients:\n")
+  print(x$coefs)
+}
+```
+
+Here we end up calling the default matrix print method using `x$coefs`.
+
+## Example: Comparing `print()` Output (`print.my_lm()` vs. `print.lm()`)
+
+```{r}
+# Our Implementation of lm
+print(my_lm(X = cbind(1, mtcars$disp), y = mtcars$mpg))
+
+# Base R implementation
+print(lm(mpg ~ disp, data = mtcars))
+```
+
+## Example: Writing a `summary.my_lm()` function
+
+```{r writing_summary_my_lm}
+# Note that summary(object, ...) instead of summary(x, ...)!
+summary.my_lm = function(object, ...){
+  
+  estimate = object$coefs                   # Beta Hat
+  sterr = sqrt(diag(object$cov_mat))        # STD Error
+  t_test = estimate / sterr                 # t-Test value
+  pval = 2*pt(-abs(t_test), df = object$df) # p-value
+  
+  # Make output matrix
+  mat = cbind("Estimate"= estimate, "Std. Err" = sterr,
+              "t value" = t_test, "Pr(>|t|)" = pval)
+  
+  rownames(mat) = rownames(object$cov_mat) # Naming
+  
+  return(structure(list(mat = mat), 
+                  class = "summary.my_lm"))
+}
+```
+
+
+## Example: Writing a `print.summary.my_lm()` function
+
+We can control how the summary generic function should look like
+on print via `print.summary.my_lm`. That is, we are defining a print function
+for another generic.
+
+```{r}
+# Note that print(x,...)!!
+print.summary.my_lm = function(x, ...) {
+  printCoefmat(x$mat,
+               P.value = TRUE, 
+               has.Pvalue = TRUE)
+}
+```
+
+
+## Example: Comparing `summary()` Output: `summary.my_lm()` 
+
+```{r}
+# Our Implementation of lm
+print(summary(my_lm(X = cbind("(Intercept)" = 1,
+                        "disp" = mtcars$disp),
+              y = mtcars$mpg)))
+```
+
+## Example: Comparing `summary()` Output: `summary.my_lm()` 
+
+```{r}
+# Base R implementation
+print(summary(lm(mpg~disp, data = mtcars)))
+```

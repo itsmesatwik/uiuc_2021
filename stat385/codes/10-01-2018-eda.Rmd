@@ -1,0 +1,537 @@
+---
+title: "EDA"
+author: "JJB + Course"
+date: "10/01/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+library("ggplot2")
+theme_set(theme_bw())
+```
+
+# Exploratory Data Analysis (EDA)
+
+## Example: 5 Stat Summary vs. Graph
+
+```{r eda}
+
+summary(iris[,4:5])
+
+ggplot(iris) +
+  geom_point(
+    aes(x = Petal.Width,
+        y = Petal.Length,
+        color = Species))
+```
+
+
+## Example: Patterns
+
+```{r gen-lin, echo = FALSE}
+# Create a sequence
+start = 1
+end = 100
+x = seq(start, end, by = 2)
+
+# Store into data.frame
+df = data.frame(x = x, 
+                y = x)
+
+# Plot result
+ggplot(df) +
+  geom_point(aes(x,y)) +
+  labs(title = "Linear Relationship")
+```
+
+
+```{r gen-wobbly-lin, echo = FALSE}
+# Create a sequence
+start = 1
+end = 100
+x = seq(start, end, by = 2)
+
+# Add some noise to original signal
+df = data.frame(x = x, 
+                y = 2*x + 1 + rnorm(length(x), mean = 3, sd = 15)
+               )
+
+# Plot result
+ggplot(df) +
+  geom_point(aes(x,y)) +
+  labs(title = "Fuzzed Linear Relationship")
+```
+
+
+## Example: Grains of Sand
+
+As an example of why graphs are helpful, consider this generated data set and accompanying quantitative EDA.
+
+```{r grains-of-sand, cache = TRUE}
+set.seed(2018)                                    # Set seed for reproducibility
+n = 1e4                                           # Number of observations
+
+a = matrix(rnorm(n * 2), ncol = 2)                # Generate values 
+rng = runif(n, 0, 2 * pi) 
+b = 0.5 * cbind(sin(rng), cos(rng))
+
+o = rbind(a, b)                                   # Combine generate data
+
+my_data = as.data.frame(o[sample(nrow(o)), ])     # Randomly sample data
+
+colnames(my_data) = c("x", "y")
+```
+
+## Example: Quantitative EDA
+
+```{r grains-summary, cache = TRUE, dependson="grains-of-sand"}
+dim(my_data)                # Dimensions of Data
+nrow(my_data)               # Number of Rows
+ncol(my_data)               # Number of Columns
+
+summary(my_data)            # Summarize data
+
+head(my_data)               # First observations in data
+tail(my_data)               # Last observations in data
+
+class(my_data)              # Kind of data
+str(my_data)                # Layout of data
+
+head(is.na(my_data))        # Any missing values?
+```
+
+
+## Example: Visual EDA
+
+```{r grains-bad-plot, cache = TRUE, dependson="grains-of-sand"}
+library("ggplot2")
+theme_set(theme_bw())
+ggplot(my_data) + 
+   geom_point(aes(x = x, y = y))
+```
+
+```{r grains-redux, cache = TRUE, dependson="grains-of-sand"}
+ggplot(my_data) + 
+   geom_point(aes(x = x, y = y), alpha = 0.05)
+```
+
+# Example: Categorical vs. Continuous
+
+```{r cat-vs-cont}
+ggplot(iris) + 
+  aes(x = Species, fill = Species) +
+  geom_bar() + 
+  labs(title = "1 Variable: Categorical Counts")
+
+ggplot(iris) + 
+  aes(x = Petal.Width, fill = Species) + 
+  geom_histogram() + 
+  labs(title = "1 Variable: Continuous Binning")
+```
+
+## Example: Covariation
+
+```{r cov-ggplot2}
+ggplot(iris) +
+  aes(Species, Petal.Width, color = Species) + 
+  geom_count() +
+    ggtitle("Covariation: Petal.Width vs. Species")
+```
+
+# Graph Systems in R
+
+## Base _R_ 
+
+```{r base-r-comparison}
+plot(iris$Sepal.Length, iris$Petal.Length,        # x variable, y variable
+     col = iris$Species,                          # Color points by species
+     pch = 15,                                    # Kind of point to use
+     cex = 1,                                     # Size of points
+     xlab = "Sepal Length",                       # Label for x-axis
+     ylab = "Petal Length",                       # Label for y-axis 
+     main = "Visualizing Sepal and Petal Length") # Main title of plot
+
+legend (x = 4.2, y = 7,                           # Manually specify legend
+        legend = levels(iris$Species), 
+        col = c(1, 2, 3), pch = 15)
+```
+
+
+```{r lattice-comparison}
+library("lattice")
+xyplot(
+  Petal.Length ~ Sepal.Length,                 # y variable, x variable
+  groups = Species,                            # Color by species
+  main = "Visualizing Sepal and Petal Length", # Graph title
+  data = iris,                                 # Data set
+  auto.key = TRUE                              # Make legend
+  ) 
+```
+
+```{r ggplot2-comparison}
+library("ggplot2")
+ggplot(data = iris) + 
+  aes(x = Sepal.Length, y = Petal.Length, color = Species) + 
+  geom_point() + 
+  labs(title = "Visualizing Sepal and Petal Length") + theme_gray() + 
+  theme()
+```
+
+
+# ggplot2
+
+## Example: Adding of a Layer
+
+```{r start-ggplot}
+g = ggplot()
+g
+```
+
+```{r preview-data, warning = FALSE}
+# Take a look at the data
+head(mpg)
+
+class(mpg$displ)
+class(mpg$hwy)
+```
+
+Add data and a mapping
+
+```{r add-mappings}
+g = ggplot(data = mpg) +
+     aes(x = displ, y = hwy, colour = class)
+g
+```
+
+Display data using a geometric point.
+
+```{r add-points}
+g = g + geom_point()
+g
+```
+
+Add trends of data per subgroup using a smoothing function.
+
+```{r add-trend-lines}
+g = g + geom_smooth()
+g
+```
+
+## Example: Layer Details
+
+```{r view-layers}
+names(g)
+str(g)
+```
+
+## Example: Graph Labels
+
+```{r graph-labels}
+g = ggplot(mpg) +
+    aes(x = displ, y = hwy, color = class) +
+    geom_point() + 
+    labs(title = "Engine Displacement (Liters) vs. Highway MPG", 
+             subtitle = "Based on data from 1999 to 2008",  
+             x = "Engine Displacement (Liters)", 
+             y ="Highway Miles Per Gallon", 
+             color = "Type of Car")
+g
+```
+
+
+### Example: Add labels to the points:
+
+```{r add-labels-plots}
+g +
+  geom_text(aes(label = rownames(mpg)))
+```
+
+
+## Example: Exporting a `ggplot2` Object
+
+```{r cli-export, eval = FALSE}
+# Save plot into object
+g = ggplot(iris) + 
+    aes(x = Sepal.Length, y = Petal.Length, colour = Species) + 
+    geom_point() + theme_bw()
+
+g
+
+# Call ggsave to render plot to file
+ggsave("Rplot.png", plot = g)
+
+ggsave("Rplot.png", plot = g, width = 10)
+```
+
+
+# Making Graphs
+
+We will be using the `ucidata` package to create plots
+
+```{r}
+# install.packages("ucidata")
+# devtools::install_github("coatless/ucidata")
+library("ucidata")
+
+head(bike_sharing_daily)
+
+# ?bike_sharing_daily   # View help documentation for variable information
+```
+
+
+## Example: Scatterplot
+
+```{r}
+theme_set(theme_bw())
+
+ggplot(data = bike_sharing_daily) +
+  geom_point( mapping = aes( x = dteday, y = cnt) )
+```
+
+## Example: Coloring Groups
+
+```{r}
+ggplot(data = bike_sharing_daily) +
+  geom_point( mapping = 
+                aes( x = dteday, y = cnt,
+                     color = season) )
+```
+
+## Example: Transparency
+
+```{r}
+ggplot(data = bike_sharing_daily, 
+       mapping = aes( x = dteday, y = cnt, color = season)) +
+    geom_point( alpha = 1)
+
+ggplot(data = bike_sharing_daily, 
+       mapping = aes( x = dteday, y = cnt, color = season)) +
+    geom_point( alpha = 0.5)
+
+
+ggplot(data = bike_sharing_daily, 
+       mapping = aes( x = dteday, y = cnt, color = season)) +
+    geom_point( alpha = 0.25)
+
+```
+
+
+## Example: Faceting a plot
+
+```{r}
+ggplot(data = bike_sharing_daily, 
+       mapping = aes( x = dteday, y = cnt, color = season)) +
+    geom_point( ) + 
+    facet_wrap(~weekday)
+```
+
+```{r}
+model = lm(cnt ~ season + weekday, data = bike_sharing_daily)
+
+X_design = model.matrix(cnt ~ season + weekday, data = bike_sharing_daily)
+
+summary(model)
+```
+
+
+### Exercise: Changing `x` and `y`
+
+
+```{r}
+# Specifying aesthetic on only one geometric object.
+ggplot(data = bike_sharing_daily) +
+  geom_point(mapping = aes(x = dteday, y = atemp, color = season))
+
+# You can avoid having to respecify the aesthetic for the graph
+ggplot(data = bike_sharing_daily) +
+  aes(x = dteday, y = atemp, color = season) + 
+  geom_point() 
+```
+
+
+## Example: Line Graph
+
+```{r}
+ggplot(data = bike_sharing_daily) +
+  aes( x = dteday, y = cnt) + 
+  geom_line( )
+```
+
+### Exercise: Changing plots
+
+```{r}
+
+```
+
+
+## Example: Barplot
+
+```{r demo-barplot}
+ggplot(data = bike_sharing_daily) +
+  aes( x = workingday) +
+  geom_bar()
+```
+
+Tabulate categorical frequencies for **one** variable
+
+```{r calculate-frequencies-one-var}
+table(bike_sharing_daily$workingday)
+
+table(bike_sharing_daily$weathersit)
+```
+
+Tabulate categorical frequencies for **two** variable
+
+```{r calculate-frequencies-two-var}
+table(bike_sharing_daily$weathersit, bike_sharing_daily$holiday)
+
+table(bike_sharing_daily$workingday, bike_sharing_daily$holiday)
+```
+
+```{r show-freq-on-barplot}
+ggplot(data = bike_sharing_daily) +
+  aes( x = holiday) + 
+  geom_bar() + facet_wrap(~weathersit)
+```
+
+## Example: Stacked Barplot
+
+```{r stacked-bar-plot}
+ggplot(data = bike_sharing_daily) +
+  aes( x = mnth , y = cnt) + 
+  geom_bar( stat = "identity" )
+```
+
+```{r stacked-bar-plot-color}
+ggplot(data = bike_sharing_daily) +
+  aes( x = mnth , y = cnt, fill = weekday) + 
+  geom_bar( stat = "identity" )
+```
+
+```{r demo-stacked-bar-plot-facet}
+ggplot(data = bike_sharing_daily) +
+  aes(x = mnth, y = cnt, fill = weekday) + 
+  geom_bar( stat = "identity") +
+  facet_wrap(~yr) + 
+  theme(axis.text.x = element_text(angle = 75, hjust = 1))
+```
+
+
+## Example: Histogram
+
+```{r demo-histogram}
+ggplot(data = bike_sharing_daily) +
+  aes( x = cnt ) + 
+  geom_histogram(  )
+```
+
+Change binwidth! 
+
+```{r histogram-demo-binwidth-high}
+ggplot(data = bike_sharing_daily) +
+  aes( x = cnt ) + 
+  geom_histogram( binwidth = 100 )
+
+ggplot(data = bike_sharing_daily) +
+  aes( x = cnt ) + 
+  geom_histogram( binwidth = 250 )
+```
+
+
+```{r histogram-demo-binwidth-low}
+ggplot(data = bike_sharing_daily) +
+  aes(x = atemp, fill = season) +
+  geom_histogram(binwidth = 0.05)
+
+ggplot(data = bike_sharing_daily) +
+  aes(x = atemp, fill = season) +
+  geom_histogram(binwidth = 0.05)
+```
+
+## Example: Boxplot
+
+```{r boxplot-demo}
+ggplot(data = bike_sharing_daily) +
+  aes( x = weekday, y = cnt, color = weekday) +
+  geom_boxplot()
+```
+
+## Example: Boxplot with Points
+
+```{r boxplot-with-points}
+ggplot(data = bike_sharing_daily) + 
+  aes( x = weekday, y = cnt, color = weekday) +
+  geom_boxplot() + geom_point()
+```
+
+## Example: Boxplot with Jittered Points
+
+
+```{r boxplot-with-jitter}
+ggplot(data = bike_sharing_daily) +
+  aes( x = weekday, y = cnt, color = weekday) +
+  geom_boxplot() + geom_jitter()
+```
+
+## Example: Facetted Boxplot
+
+```{r facetted-boxplot}
+ggplot(data = bike_sharing_daily) +
+  aes( x = weekday, y = cnt, color = weekday) + 
+  geom_boxplot() + facet_wrap(~season)
+```
+
+
+## Example: Violin Plot
+
+```{r violin-plot-with-jitter}
+ggplot(data = bike_sharing_daily) + aes( x = weekday, y = cnt, color = weekday) +
+  geom_violin() + geom_jitter(height = 0)
+```
+
+# Themes
+
+## Example: Modifying a Theme
+
+```{r modify-theme-temporary}
+g = ggplot(data = iris) + 
+  geom_point(aes(Sepal.Length, Petal.Length, color = Species)) + 
+  labs(title = "Visualizing Sepal and Petal Length") 
+
+g 
+
+g + theme(
+  panel.background = element_blank(),
+  axis.text = element_blank()
+)
+```
+
+
+```{r themes-predefined, fig.width = 6, fig.height = 2.5}
+g = ggplot(mtcars) +
+      geom_point(aes(x = wt, y = mpg,
+                     color = factor(gear))) + 
+      facet_wrap(~am)
+
+# Default theme:
+g + theme_gray()
+
+# Black and white
+g + theme_bw()
+
+# Dark
+g + theme_dark()
+
+# Classic
+g + theme_classic()
+
+# Geoms only
+g + theme_void()
+```
+
+

@@ -1,0 +1,479 @@
+---
+title: "Functionals"
+author: "JJB + Course"
+date: "11/05/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+
+# Ubiquitousness of Functions
+
+## Functions as Objects
+
+```{r}
+square = function(x) {  # Create a square function
+  x^2
+}
+
+class(square)            # Find high-level class information
+typeof(square)          # Obtain low-level class information
+```
+
+## Extracting Function Properties
+
+```{r}
+formals(square)          # Retrieve parameters & default values
+body(square)               # Retrieve the function body
+environment(square) # Retrieve the location of function
+```
+
+
+```{r}
+square = function(x) {  # Create a square function
+  x^2
+}
+
+square
+
+square(2)
+```
+
+
+```{r}
+square = edit(square)
+
+square
+
+square(2)
+```
+
+
+## Environment Scope
+
+```{r, eval = FALSE}
+# Note `value` has not been defined.
+multiple_constant = function(x) {
+    return(value * x) 
+}
+
+# Only on call is an error detected.
+multiple_constant(5)
+## Error in multiple_constant(5) : 
+## object 'value' not found 
+```
+
+## Working with a Global Environment
+
+```{r}
+# Define value in global environment 
+# (e.g. outside of the function) 
+value = 3 
+multiple_constant = function(x) {
+    # `value` is not been defined in the function.
+    return(value * x) 
+} 
+multiple_constant(5) 
+```
+
+
+## Hidden Function Calls
+
+```{r}
+# Addition
+10 + 25
+
+`+`(10, 25)
+
+`-`(5, 10)
+
+# Assignment
+x = c(1, 2, 3)
+`=`(x, c(1, 2, 3))
+
+# Subset
+x[[1]] 
+`[[`(x, 1)
+```
+
+## Anonymous Functions
+
+```{r}
+function(x = 4) x + 1
+
+(function(x = 4) x + 1)(2)      # Anonymous definition
+
+add_one = function(x = 4) x + 1 # Named function 
+add_one(2) 
+```
+
+## Function as a Parameter
+
+```{r}
+add = function(x, y) { x + y }
+subtract = function(x, y) { x - y }
+multiply = function(x, y) { x * y }
+
+ops = function(f, x, y) { 
+    f(x , y)
+}
+
+ops(add, 2, 5)
+
+ops(subtract, 2, 5)
+```
+
+### Exercise:
+
+1. determine the function properties of `mean()`
+
+```{r}
+# The parameters of the function
+formals(mean)
+
+```
+
+```{r}
+# Look at the definition of the function
+# Definition is the body statements
+
+body(mean)
+
+mean
+```
+
+```{r}
+# This is the traditional definition
+# but, it uses an S3 class to handle different kinds
+# of data types.
+#
+# This requires more specification of what is happening.
+
+# Pull up help docs
+# ?mean
+```
+
+2. spot the error in the function given below 
+
+```{r}
+set.seed(1111)
+
+x = rnorm(100) 
+# n = length(x) 
+
+my_func = function(x) {
+    summed = 1/n * sum(x) 
+    message("n is: ", n)
+    summed
+}
+my_func(x)
+```
+
+## Example: Lazy Evaluation 
+
+```{r, eval = FALSE}
+
+no_handlebars_any = function(x = stop("This is an error being triggered")) {
+  
+  1 + 1
+}
+
+
+no_handlebars_any(5)
+
+# Here when we use x, we are using the default value
+# causing an error when it is called.
+no_handlebars_end = function(x = stop("This is an error being triggered")) {
+  
+  x + 1
+}
+
+
+# Stop if no value is supplied
+# no_handlebars_end()
+
+no_handlebars_end(5)
+
+
+```
+
+
+
+# Functionals
+
+## Example: Specify Missingness
+
+```{r}
+set.seed(191)
+my_df = data.frame(col1 = sample(-1:10, n, replace = TRUE),
+                   col2 = sample(-1:10, n, replace = TRUE),
+                   col3 = sample(-1:10, n, replace = TRUE),
+                   col4 = sample(-1:10, n, replace = TRUE))
+
+my_df
+
+my_df$col1[my_df$col1 == -1] = NA
+my_df$col2[my_df$col2 == -1] = NA
+my_df$col3[my_df$col3 == -1] = NA
+my_df$col4[my_df$col4 == -1] = NA
+
+my_df
+```
+
+
+## Example: Functionize it!
+
+```{r}
+# Action repeated consistently
+code_missing = function(x) { 
+    x[x == -1] = NA
+    x
+}
+
+# Apply behavior to data
+my_df$col1 = code_missing(my_df$col1)
+my_df$col2 = code_missing(my_df$col2)
+my_df$col3 = code_missing(my_df$col3)
+my_df$col4 = code_missing(my_df$col4)
+```
+
+## Example: Repeating a Behavior
+
+```{r}
+# Action repeated consistently
+code_missing = function(x) { 
+    x[x == -1] = NA
+    x
+}
+
+# Apply uniformly the action to columns
+for(i in seq_len(ncol(my_df))) { 
+    my_df[, i] = code_missing(my_df[, i])
+} 
+```
+
+
+## Example: Vectorization
+
+```{r}
+x = 1:4
+x^2     # f(x) = x^2
+```
+
+## Example Functional
+
+```{r}
+x = 1:4
+
+# Define function
+square = function(x) {x^2}
+
+# List Output
+lapply(x, FUN = square)    
+
+# Vector / Matrix Output
+sapply(x, FUN = square)
+
+# Force output to be a list
+sapply(x, FUN = square, simplify = FALSE)
+```
+
+
+```{r}
+x = matrix(1:12, nrow = 3)
+
+# Margin = 1 -> Take the summation of each row.
+apply(x, FUN = sum, MARGIN = 1)
+
+# Equivalent to performing a row sum.
+rowSums(x)
+
+# Margin 2 -> Take the summation of each column
+apply(x, FUN = sum, MARGIN = 2)
+
+# Equivalent to performing the column summation.
+colSums(x)
+
+# What happens if we use both on a matrix???
+apply(x, FUN = sum, MARGIN = c(1,2))
+
+# Here we need to create a 3 dimensional data structure
+# to capture the dim.
+y = array(1:12, dim = c(2, 2, 3))
+
+y
+
+# Sum across the matrices
+apply(y, FUN = sum, MARGIN = c(1,2))
+```
+
+
+## Example: Functional as a Loop
+
+```{r}
+lapply_func = function(x, f) { 
+  out = vector('list', length(x))
+  
+  for(i in seq_along(out)) {
+    out[i] = f(x[i])
+  }
+
+  out
+}
+
+lapply_func(x, square)
+```
+
+
+```{r}
+compute_value_functional = function(x, f) {
+  lapply(x, f)
+}
+
+compute_value_functional(mtcars, mean)
+```
+
+```{r}
+compute_value_iteration = function(x, f) { 
+  out = vector('list', length(x))
+  
+  for(i in seq_along(out)) {
+    out[[i]] = f(x[[i]])
+  }
+
+  out
+}
+
+compute_value_iteration(mtcars, mean)
+```
+
+
+
+
+### Example: Functional calling another function
+
+```{r}
+call_func = function(x, f) {  
+  # call the function `f` with data `x`
+  f(x) 
+}
+
+x = c(-2, 0.3, 1.2, 4.8)
+
+call_func(x, mean)
+call_func(x, min)
+```
+
+
+## Example: Functional in Action
+
+```{r}
+set.seed(111)
+
+replicate(3, runif(5))
+
+rep(runif(5), 3)
+```
+
+### Exercise:
+
+Use the `replicate` function to sample 10 observations from a normal distribution (`?rnorm`)
+5 times.
+
+```{r}
+set.seed(999999999)
+
+replicate(5, rnorm(10))
+
+```
+
+
+
+### Example: Emphasized Loop
+
+```{r}
+means = vector("double", ncol(trees))
+for(i in seq_along(trees)) {
+  means[[i]] = mean(trees[[i]], na.rm = TRUE)
+}
+
+sds = vector("double", ncol(trees))
+for(i in seq_along(trees)) {
+  sds[[i]] = sd(trees[[i]], na.rm = TRUE)
+}
+
+means
+sds
+```
+
+c.f. [Hadley Wickham's](https://twitter.com/hadleywickham) talk on
+  ["Managing many models with _R_"](https://www.youtube.com/watch?v=rz3_FDVt9eg#t=19m55s)
+  at Edinburgh R User Group
+
+## Example: Emphasize Action
+
+```{r}
+means = sapply(trees, FUN = mean)
+sds   = sapply(trees, FUN = sd)
+
+means
+sds
+```
+
+
+## Example: Most commonly used functionals in _R_
+
+| Function  |    Description | Output |
+|-----------|-----------------------|----------------------------------|
+| `lapply`  | Apply a Function over a List or Vector | `list` |
+| `sapply`  | Apply a Function over a List or Vector | `vector`, `matrix`,  `array`, `list` |
+| `apply`   | Apply Functions Over Array Margins | `matrix`, `array` |
+| `mapply`  | Apply a Function to Multiple List or Vector Arguments |  `vector`, `matrix`,  `array`, `list` | 
+
+### Example: Functions as Data
+
+```{r}
+stat_funs = list(min = min, median = median,
+                 mean = mean, sd = sd, max = max)
+
+stat_funs
+
+# Apply a Function over a List or Vector
+version_one = sapply(stat_funs,
+                     FUN = function(x, data) sapply(data, x),
+                     data = trees)
+
+version_one
+
+# Apply a Function to Multiple Lists/Vectors
+version_two = mapply(sapply, 
+                     stat_funs, MoreArgs=list(X=trees))
+
+all.equal(version_one, version_two)
+
+version_one
+version_two
+```
+
+### Exercise
+
+- Determine the classes of `mtcars` 
+- Use the `summary()` on three data sets:
+
+```{r}
+data_combined = list(PlantGrowth, rock, mtcars)
+```
+
+Perform the action in two ways: 1. with a `for` loop and 2. a functional.
+
+- Compute the quantiles of: 
+
+```{r}
+sim_data = list(normal_nums = rnorm(100), 
+                uniform_nums = runif(50))
+```
+
+See `?quantile`

@@ -1,0 +1,239 @@
+---
+title: "Grammar of Data"
+author: "JJB + Course"
+date: "10/10/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# dplyr
+
+```{r}
+# install.packages("dplyr")
+library("dplyr")
+```
+
+## Example: Enrollment Data
+
+```{r view-enrollment}
+library("tidyr")
+
+# Untidy Data
+enrolled_fa17_untidy = data.frame(
+  undergrads = c(18345, 15267, 12),
+  profs = c(352, 640, 0),
+  grads = c(7173, 6028, 9),
+  Gender = c("Men", "Women", "Unknown")
+)
+
+# Why do we need to include gender inside the data.frame? 
+
+# Tidy the data
+enrolled_fa2017 = enrolled_fa17_untidy %>% 
+  gather(key = "Year",       # What the key is
+         value = "Enrolled", # Specify what the _third variable_ should be
+         undergrads:grads)   # Take variables from undergrads to grads
+                             # similar to seq(from, to)
+
+enrolled_fa2017
+
+
+enrolled_fa2017[, 3]
+
+enrolled_fa2017[, c(FALSE, FALSE, TRUE)]
+
+enrolled_fa2017[, "Enrolled"]
+
+enrolled_fa2017$Year == "undergrads"
+
+enrolled_fa2017[enrolled_fa2017$Year == "undergrads", ]
+
+enrolled_fa2017[enrolled_fa2017$Enrolled == max(enrolled_fa2017$Enrolled), ]
+
+enrolled_fa2017
+```
+
+
+## Example: NSE
+
+```{r nse-magic}
+x = 4
+x + 3
+
+# Capture the R expression
+quote({ x + 3 })
+
+# Store the R expression for later use
+my_r_command = quote({ x + 3 })
+
+# Retrieve the R expression
+my_r_command
+```
+
+
+## Example: Filter Observations
+
+```{r filter-obs}
+enrolled_fa2017_men = filter(enrolled_fa2017, Gender == "Men") 
+enrolled_fa2017_men
+
+enrolled_fa2017_women = filter(enrolled_fa2017, Gender == "Women")           # dplyr
+enrolled_fa2017_women = enrolled_fa2017[enrolled_fa2017$Gender == "Women", ] # base R
+enrolled_fa2017_women
+```
+
+## Example: Select Variables
+
+```{r select-vars}
+enrolled_fa2017_women_info = select(enrolled_fa2017_women, Year, Enrolled)
+enrolled_fa2017_women_info
+
+enrolled_fa2017_women[, c("Year", "Enrolled")]  # base R
+```
+
+## Example: Arranging Data
+
+```{r ordered-data}
+# Ascending order (lowest to highest)
+enrolled_fa2017_women_ordered = arrange(enrolled_fa2017_women_info, Enrolled)
+enrolled_fa2017_women_ordered
+
+enrolled_fa2017_women[order(enrolled_fa2017_women$Enrolled), ]  # base R
+
+
+# Descending order (highest to lowest)
+enrolled_fa2017_women_ordered = arrange(enrolled_fa2017_women_info, desc(Enrolled))
+enrolled_fa2017_women_ordered
+enrolled_fa2017_women[order(enrolled_fa2017_women$Enrolled, decreasing = TRUE), ]  # base R
+
+```
+
+## Example: Summarising Data
+
+```{r summarized-data}
+enrolled_fa2017_total_women = summarise(enrolled_fa2017_women_info,
+                                        Total_Enrolled = sum(Enrolled),
+                                        Avg_Enrolled = mean(Enrolled),
+                                        SD_Enrolled = sd(Enrolled))
+
+enrolled_fa2017_total_women
+
+
+sum(enrolled_fa2017_women_info$Enrolled) # base R
+```
+
+
+## Example: Mutating Data
+
+```{r mutated-data}
+enrolled_fa2017_women_add = mutate(enrolled_fa2017_women_info,
+                                   Additional = Enrolled + 550)
+enrolled_fa2017_women_add
+
+
+# Directly overwrite a variable
+mutate(enrolled_fa2017_women_info,
+       Enrolled = Enrolled + 550)
+enrolled_fa2017_women_info
+
+enrolled_fa2017_women_add$Additional + 550 # base R
+```
+
+## Example: dplyr with pipes!
+
+```{r full-chain}
+enrolled_fa2017_total_women = 
+     enrolled_fa2017 %>%                      # Take the enrollment data and, then
+    filter(Gender == "Women") %>%             # Retrieve all Women data and, then
+    select(Year, Enrolled) %>%                # Take Year and Enrolled variables and, then
+    arrange(Enrolled) %>%                     # Order Enrolled in Ascending order and, then
+    summarise(Total_Enrolled = sum(Enrolled)) # Get total women enrollment
+
+enrolled_fa2017_total_women
+```
+
+### Exercise:
+
+Select the Sepal.Length and Petal.Length variables in the iris data set
+
+```{r select-variables}
+head(iris)
+```
+
+```{r}
+iris %>% 
+  select(Sepal.Length, Petal.Length)
+```
+
+```{r}
+iris[, c("Sepal.Length", "Petal.Length")]
+```
+
+
+
+Retrieve all of the `virginica` Species observations from `iris`
+
+```{r view-iris}
+head(iris)
+
+iris %>%
+  filter(Species == "virginica")
+```
+
+### Exercise: Split-Apply-Combine
+
+Provide the mean, maximum, minimum of the Sepal.Length for each of species of iris alongside a count.
+
+```{r split-data}
+library("dplyr")
+head(iris)
+
+# Switch it to a tibble to track properties
+(iris_tbl = as_tibble(iris))
+
+iris_tbl %>%
+  group_by(Species) %>%
+  summarise(mean_sepal = mean(Sepal.Length), 
+            max_sepal = max(Sepal.Length),
+            min_sepal = min(Sepal.Length),
+            n_count = n(),
+                    # ^^^ Count by group observations
+            n_species = n_distinct(Species)
+            )
+# Do not use count within a summarise
+iris_tbl %>%
+  group_by(Species) %>%
+  summarise(n_count = count(Species))
+
+# Count replicate the table outside of it
+iris_tbl %>%
+  count(Species)
+```
+
+### Example: Selection
+
+
+```{r}
+iris_tbl %>%
+  select(-Sepal.Length, -Species)
+```
+
+```{r}
+iris_tbl
+
+iris_tbl %>%
+  select(Sepal.Length, Sepal.Width:Petal.Width)
+```
+
+```{r}
+iris_tbl
+
+iris_tbl %>%
+  select(1, 2)
+```
+
+
+

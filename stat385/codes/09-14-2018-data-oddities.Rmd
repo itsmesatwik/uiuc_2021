@@ -1,0 +1,409 @@
+---
+title: "Data Oddities"
+author: "JJB + Course"
+date: "09/14/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Vector Review
+
+## Example: Making an _atomic_ vector
+
+We've already made _atomic_ vectors through our use of the `c()` or
+combine function to merge together multiple expressions. However,
+we never referred to it directly as an _atomic_ vector.
+
+```{r example-atomic}
+x = c(104, 0, 12, 237, -5)
+```
+
+### Exercise: Creating a vector
+
+Create a character variable called `my_name`. 
+
+In the first entry, put your **first** name. 
+
+In the second entry, put your **last** name. 
+
+As an added bonus, try to concatenate the values together.
+
+_Hint_ Look at the `paste()` function.
+
+## Example: Recreating a vectorization with a constant.
+
+Let's try to _recreate_ how _R_ performs a vectorization when a vector does
+_not_ have the same length. To do so, we'll need to use the `rep()` function.
+The `rep()` function allows us to replicate values. 
+
+```{r repeat-obs}
+# Create a vector with the number 42 repeated five times
+rep(42, times = 5)  
+
+# Create a vector with repeated elements of a fixed
+rep(c(1, 2), length.out = 3) 
+
+# Create a vector with each element repeated a set number of times.
+rep(c(3, 4), each = 2)
+```
+
+So, let's replicate a constant:
+
+```{r vectorization-constant}
+constant = 5
+
+# Vector
+x = c(1, 2, 3, 4)
+x
+
+# Replicate a constant
+y = rep(constant, times = length(x))
+y
+
+x + y 
+
+x + constant
+```
+
+### Exercise: Determining recycling properties of vectorization for differing lengths
+
+Vectorization works out well when the two vectors are of the same length. 
+
+e.g. 
+
+```{r length-of-vec}
+length(x)
+length(y)
+```
+
+What happens when the length of `x` differs from a new vector, say `z`? 
+
+- Case 1: `z` is a multiple of `x`
+- Case 2: `z` is _not_ a multiple of `x`
+
+```{r cases-vectorization}
+x = c(1, 2, 3, 4)
+z_1 = c(1, 2)
+```
+
+
+_Hint_ There are two cases at play here. 
+
+### Exercise: Recreate recycling property of vectorization for an uneven vector
+
+Consider a vector `a` that is defined as:
+
+```{r a-defined}
+a = c(8, 9)
+```
+
+Using the `rep()` function, figure out a way to recreate:
+
+```{r example-uneven}
+x = c(1, 2, 3, 4)
+x + a
+```
+
+Is your solution robust? What happens if `a` changes to:
+
+```{r}
+a = c(8, 9, 10)
+```
+
+
+# Data Structures
+
+
+## Example: Vector Properties
+
+All vectors have about 4 different properties.
+
+```{r vector-numeric}
+x = c(1, 2, 3, 4)
+
+typeof(x)
+length(x)
+attributes(x)
+class(x)
+```
+
+### Exercise: Determine a vectors properties
+
+Create a vector called `my_ints` that contains the 
+following _integer_ numbers:
+
+42, 188, 69, 0, -1
+
+_Hint_ Unlike `numeric`s, `integer` numbers in _R_ must have
+an _L_ immediately proceeding it. 
+
+
+
+## Example: Checking an _atomic_ vector's data type
+
+We can _check_ whether `x` is a `numeric` vector by using a variant of
+`is.*()`. 
+
+```{r check-ints}
+is.numeric(x)
+```
+
+### Exercise: Verify _atomic_ vector data type
+
+Verify the integer vector created is indeed an `integer` and not a
+`numeric`.
+
+## Example: Creating a List (Generic Vector)
+
+Lists can contain a mixed type of data. They are very helpful for returning
+_multiple_ objects or working with semi-structured data. 
+
+```{r}
+character_vec = c("toad", "movie", 
+                  "stats", "green")
+numeric_vec = c(1, 2, 3, 4)
+integer_vec = c(1L, 2L, 3L, 4L)
+logical_vec = c(TRUE, T, FALSE, F)
+
+list_vec = list(char = character_vec,
+                        num = numeric_vec, 
+                        int    = integer_vec,
+                        bool = logical_vec 
+)
+
+list_vec
+```
+
+### Exercise: Create a List-ception.
+
+Create another `list` called `my_list`. Make the first element in the 
+list a vector containing your _weight_ and the _second_ vector `list_vec`,
+which was the `list` created in the prior example.
+
+# Coercion
+
+## Example: Implicit Coercion
+
+```{r}
+c(TRUE, "PIE")
+
+c(TRUE, 42.5, 45 + 1i , "PIE")
+
+c(TRUE, FALSE, 4.5+1i)
+```
+
+## Example: Coercion Hierarchy
+
+Logical as the base
+
+```{r}
+logical_vec = c(TRUE, FALSE, T, F)
+logical_vec
+```
+
+Logical to Integer
+
+```{r logical-to-int}
+int_vec = c(logical_vec, 42L)
+int_vec
+```
+
+Integer to Numeric
+
+```{r int-to-num}
+numeric_vec = c(int_vec, 32.9)
+numeric_vec
+```
+
+Numeric to Complex
+
+```{r num-to-complex}
+complex_vec = c(numeric_vec, 8.0 + 1.0i)
+complex_vec
+```
+
+Complex to Character
+
+```{r complex-to-character}
+character_vec = c(complex_vec, "toad")
+character_vec
+```
+
+## Example: Explicit Coercion
+
+Force to character
+
+```{r character-coercion}
+as.character(c(TRUE, 1, 9.8))    
+```
+
+Force to integer
+
+```{r integer-coercion}
+as.integer(c(5.3, 8.8))  
+```
+
+Force to logical
+
+```{r logical-coercion}
+as.logical(c(1L, 0L))  
+```
+
+Force to numeric
+
+```{r numeric-coercion}
+as.numeric(c(42L, 58L))
+```
+
+
+### Exercise: Determining End Types
+
+Consider the following vector construction statements. Determine what the
+final data type is.
+
+```{r coercise-test, eval = FALSE}
+# What's the class?
+c(1, 2, 3)
+
+c(1L, 2L, 3L)
+
+c(TRUE, 0L)
+
+c(FALSE, "toad", 3)
+
+TRUE + 1
+
+```
+
+# Missingness
+
+## Example: Data with missingness
+
+If we did not record data, we use the value `NA` to indicate missingness. 
+This allows us to retain similar lengths for each data structure.
+
+```{r inserted-missingness-subject-heights}
+subject_heights_na = data.frame(id = c(1, 2, 3, 55),
+                                sex = c("M", "F", NA, NA),
+                                height = c(6.1, NA, 5.2, NA))
+```
+
+
+### Exercise: Inserting Missingness - Twitter Stocks
+
+Insert missingness into the twitter stock price data pursuant to the slides:
+
+```{r insert-missingness-twtr}
+twtr_stock_prices = data.frame(
+  time     = as.POSIXct(
+    c("09:30 AM", NA, "09:50 AM", "10:00 AM"),
+    format = "%I:%M %p"),
+  price    = c(22.40, 22.38, 22.46, NA)
+)
+
+twtr_stock_prices
+
+# View(twtr_stock_prices)
+```
+
+### Exercise: Inserting Missingness - Twitter Stocks
+
+Insert missingness into the champaign weather data pursuant to the slides:
+
+```{r insert-missingness-champaign}
+champaign_weather = data.frame(
+  date = as.Date(c("1/21", "1/22", "1/23", "1/24", "1/25", "1/26", "1/27"), format = "%e/%d"),
+  temp = c(44, 46, NA, 26, 37, 44, NA),
+  rain = c(NA, TRUE, TRUE, FALSE, NA, FALSE, FALSE),
+  wind = c(NA, 19, NA, NA, 14, NA, 12)
+)
+
+champaign_weather
+```
+
+## Example: Missing in Action
+
+```{r missing-data}
+original_iq = data.frame(Age = c(18, 19, 19, 22, 25, 28, 30),
+                         IQ = c(112, 108, 94, 87, 132, 79, 103))
+
+mcar_iq = data.frame(Age = c(18, 19, 19, 22, 25, 28, 30),
+                     IQ = c(NA, 108, 94, 87, NA, 79, NA))
+
+mar_iq = data.frame(Age = c(18, 19, 19, 22, 25, 28, 30),
+                    IQ = c(NA, 108, 94, 87, NA, 79, NA))
+
+mnar_iq = data.frame(Age = c(18, 19, 19, 22, 25, 28, 30),
+                     IQ = c(112, 108, NA, NA, 132, NA, 103))
+```
+
+## Example: Determining if Data is Missing
+
+```{r determine-missingness}
+data_with_missing = data.frame(Age = c(18, 19, 19, 22, 25, 28, 30),
+                               IQ = c(NA, 108, 94, 87, NA, 79, NA))
+
+checked_data = is.na(data_with_missing)
+```
+
+## Example: Imputing Values for Missing Data
+
+Imputation is the assignment of a value when missingness is abound. 
+There are many strategies behind imputing values to inspire an entire
+subfield of statistics. Here, we're going to use the `median()`. 
+
+Always begin with making a _copy_ of the `data.frame` you wish to manipulate.
+
+```{r create-data-copy}
+# Copy data
+imputed_df = data_with_missing 
+
+# Verify copy is correct
+all.equal(imputed_df, data_with_missing)
+```
+
+Create list of missing observations in IQ
+
+```{r create-index-for-imputation}
+index_na = is.na(data_with_missing$IQ)
+index_na
+```
+
+Impute (or set missing values to) the median of the data
+
+```{r show-imputation}
+imputed_df[index_na, "IQ"] = median(data_with_missing$IQ)
+
+imputed_df
+```
+
+
+## Example: Retrieving Complete Cases
+
+Subset any row with an NA.
+
+```{r omit-missing-data}
+data_present = na.omit(data_with_missing)
+```
+
+By subsetting with logicals
+
+```{r retrieve-nonmissing-data}
+data_present_complete = data_with_missing[complete.cases(data_with_missing), ]
+```
+
+Verify both approach converge
+
+```{r verify-subset-approaches}
+all.equal(data_present, data_present_complete, check.attributes = FALSE)
+```
+
+**Note:** The `check.attributes` parameter actively ignores additional
+information that is found when doing `na.omit()`. In particular, you can retrieve row-index information for what were "incomplete" rows.

@@ -1,0 +1,238 @@
+---
+title: "Dates and Times"
+author: "JJB + course"
+date: "12/09/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# Overview Dates and Times
+
+## Example: Base Date and Time Formats
+
+```{r}
+Sys.Date()             # Returns a date as R's Date object
+
+Sys.time()             # Returns both date & time at current locale as POSIXct
+
+as.numeric(Sys.time()) # Seconds from UNIX Epoch (1970-01-01 00:00:00 UTC)
+
+Sys.timezone()         # Time zone at current location
+```
+
+## Example: Date and Time Formats - Failure of `characters`
+
+```{r bad_time, eval = FALSE}
+# Bad Time Differencing:
+
+time1 = "2017-07-10 10:25:44 CDT" # UNIX Time Stamp
+time2 = "2017-07-10 15:25:44 CDT" # UNIX Time Stamp
+time2 - time1
+# Error in time2 - time1 : non-numeric argument to
+# binary operator
+```
+
+
+## Example: Proper Date and Time Formats - Time Operations
+
+```{r good_time}
+time1 = as.POSIXct("2017-07-10 10:25:44")
+time2 = as.POSIXct("2017-07-10 15:25:44") # +5 Hours
+time2 - time1
+```
+
+**Note:** Default format for `POSIXct` is `%Y-%m-%d %H:%M:%S`
+
+### Exercise: Time in semester...
+
+How many days are in a semester if we have the dates of:
+
+- First day: August 27th
+- Last day: December 12th 
+
+
+# Date Formats
+
+## Example: Formats for Working with Dates
+
+```{r format_table_date, echo = FALSE}
+d = Sys.time()
+
+a_f = format(d,"%a")
+A_f = format(d,"%A")
+
+b_f = format(d,"%b")
+B_f = format(d,"%B")
+
+
+m_f = format(d,"%m")
+d_f = format(d,"%d")
+e_f = format(d,"%e")
+
+y_f = format(d,"%y")
+Y_f = format(d,"%Y")
+
+```
+
+
+| Format | Description                                      |  Example      |
+|--------|--------------------------------------------------|---------------|
+| `%a`   | Abbreviated weekday name in the current locale   | `r a_f`       |
+| `%A`   | Full weekday name in the current locale          | `r A_f`       |
+| `%b`   | Abbreviated month name in the current locale     | `r b_f`       |
+| `%B`   | Full month name in the current locale            | `r B_f`       |
+| `%m`   | Month number (01-12)                             | `r m_f`       |
+| `%d`   | Day of the month as decimal number (01-31)       | `r d_f`       |
+| `%e`   | Day of the month as decimal number (1–31)        | `r e_f`       |
+| `%y`   | Year without century (00-99)                     | `r y_f`       |
+| `%Y`   | Year including century                           | `r Y_f`       |
+
+For more, see `?strptime`
+
+## Example: Formating Non-Standard Dates
+
+```{r}
+(yyyy_mm_dd = as.POSIXct("2017-07-10",
+                         format = "%Y-%m-%e"))
+
+(dd_mm_yy = as.POSIXct("10/07/17",
+                       format = "%e/%m/%y"))
+
+(mon_dd_yyyy = as.POSIXct("Jul 07, 2017",
+                         format = "%b %e, %Y"))
+```
+
+### Exercise: Convert Strings to Dates
+
+How would you convert... 
+
+- 2017-07-10, e.g. YYYY/MM/DD
+- September 10, 2018, e.g. MonthFull DD, YYYY
+
+# Time Formats
+
+## Example: Formats for Working with Times
+
+```{r format_table_time, echo = FALSE}
+d = Sys.time()
+
+S_f = format(d,"%S")
+OS_f = format(d,"%OS")
+
+M_f = format(d,"%M")
+H_f = format(d,"%H")
+I_f = format(d,"%I")
+
+p_f = format(d,"%p")
+
+z_f = format(d,"%z")
+Z_f = format(d,"%Z")
+
+```
+
+| Format   | Description                                      | Example         |
+|----------|--------------------------------------------------|-----------------|
+| `%S`     | Second as integer (00–61)                        | `r S_f`         |
+| `%OS`    | Second as decimal number (00-60.99)              | `r OS_f`        |
+| `%M`     | Minute as decimal number (00–59)                 | `r M_f`         |
+| `%H`     | Hours as decimal number (00–23)                  | `r H_f`         |
+| `%I`     | Hours as decimal number (01–12)                  | `r I_f`         |
+| `%p`     | AM/PM indicator in the locale                    | `r p_f`         |
+| `%z`     | Signed offset in hours and minutes from UTC      | `r z_f`         |  
+| `%Z`     | Time zone abbreviation as a character string     | `r Z_f`         |  
+
+For more, see `?strptime`
+
+## Example: Formating Non-Standard Times
+
+```{r time_nonstandard}
+(h_m = as.POSIXct("11:38",
+                         format = "%H:%M"))
+
+(h_am = as.POSIXct("11 AM",
+                       format = "%I %p"))
+
+(h_m_s_z = as.POSIXct("11:38:22", # Chop off the TZ 
+                         format = "%H:%M:%S",
+                         tz = "America/New_York"))
+```
+
+### Exercise: Convert strings to times
+
+How would you convert... 
+
+- 12:30 PM, e.g. HH:MM A/PM
+- 38:22, e.g. MM:SS
+
+
+## Example: `POSIXct` - Unix Epoch
+
+`POSIXct`: Stores time as seconds since UNIX epoch on `1970-01-01 00:00:00`
+
+```{r consider_posixct}
+# POSIXct output
+(origin = as.POSIXct("1970-01-01 00:00:00",
+                    format ="%Y-%m-%d %H:%M:%S",
+                    tz = "UTC"))
+
+as.numeric(origin)     # At epoch
+
+as.numeric(Sys.time()) # Right now
+```
+
+# Misc
+
+## Example: `POSIXlt` - list form dates
+
+`POSIXlt`: Stores a list of day, month, year, hour, minute, second, and so on. 
+   
+```{r consider_posixlt}
+# POSIXlt output
+posixlt = as.POSIXlt(Sys.time(),
+                    format ="%Y-%m-%d %H:%M:%S",
+                    tz = "America/Chicago")
+
+## View structure
+str(posixlt)
+```
+
+```{r converison-posixct}
+# Convert to POISXct
+posixct = as.POSIXct(posixlt)
+posixct
+```
+
+## Example: `POSIXlt` - List Values
+
+```{r consider_posixlt_list}
+posixlt$sec   # Seconds 0-61
+posixlt$min   # Minutes 0-59
+posixlt$hour  # Hour 0-23
+posixlt$mday  # Day of the Month 1-31
+posixlt$mon   # Months after the first of the year 0-11
+posixlt$year  # Years since 1900.
+```
+
+## Example: `anytime` - auto conversion
+
+```{r example_anytime}
+library(anytime)
+Sys.setenv(TZ=anytime:::getTZ()) ## helper function to try to get TZ
+
+anytime(c("2017-Jul-10 10:11:12", "Jul/10/2017 10:11:12", "Jul-10-2017 10:11:12"))
+anytime(c("Mon Jul 10 10:11:12 2016", "Mon Jul 10 10:11:12.345678 2017"))
+```
+
+## Example: `lubridate` - Dates Made Easy
+
+```{r example_lubridate, message=FALSE}
+library(lubridate)
+ymd("20170710")
+interval(mdy("07-10-2017"), dmy("10/07/2017"))
+```
+
+For more, please read the [Lubridate vignette](https://cran.r-project.org/web/packages/lubridate/vignettes/lubridate.html)
+on the [CRAN](https://cran.r-project.org/package=lubridate)

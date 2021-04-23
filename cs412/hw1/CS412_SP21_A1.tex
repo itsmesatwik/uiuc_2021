@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+\usepackage{amsmath,amssymb,theorem,float,algorithmic,algorithm,bbm,bm}
+\usepackage{graphicx,enumerate,color,hyperref}
+
+
+\begin{document}
+	\begin{center}
+		{\bf {\huge CS 412: Spring'21}}\\
+		\vspace*{2mm}
+		{\bf {\huge Introduction To Data Mining}}\\
+		\vspace*{5mm}
+		{\bf {\huge Assignment 1}\\ \vspace*{2mm} {\large (Due Thursday, February 25, 11:59 pm)}}
+	\end{center}
+	%\vspace*{5mm}
+	\par \noindent
+
+
+\begin{itemize}
+\item Feel free to talk to other students of the class while doing the homework. We are more concerned that you learn how to solve the problems than that you demonstrate that you solved it entirely on your own. You should, however, write down your solution yourself. Please try to keep the solution brief and clear.
+\item Please use Slack first if you have questions about the homework. You can also use CampusWire, send us e-mails, and/or come to our office hours. If you are sending us emails with questions on the homework, please cc all of us (Arindam, Carl, Jialong, and Qi) for faster response.
+\item The homework is due at 11:59 pm on the due date. We will be using Compass for collecting the homework assignments. Please submit your answers via Compass (\url{http://compass2g.illinois.edu}). Please do NOT email a hard copy of your write-up. Contact the TAs if you are having technical difficulties in submitting the assignment. We will NOT accept late submissions!
+\item The homework should be submitted in pdf format. You are required to submit source code, and use proper file names to identify the corresponding questions. For instance, ‘Question1.netid.py’ should refer to the python source code for Question 1, replace netid with your netid. Compress all the files (pdf and source code files) into one file. Submit the compressed file ONLY.
+\item For each question, you will NOT get full credit if you only give out a final result. Please show the necessary details, calculation steps, and explanations as appropriate.
+\item All the data can be download from Compass2g.
+\end{itemize}
+
+\newpage
+
+\begin{enumerate}
+
+
+\item (26 points) Consider the dataset (file: {\tt data.online.scores.txt}) which contains the records of students’ exam scores (sample from the population) for the past few years of an online course. The first column is a student’s id, the second column is the mid-term score, and the third column is the finals score, and data are tab delimited. Based on the dataset, compute the following statistical description of the mid-term scores. If the result is not an integer, then round it to 3 decimal places. 
+\begin{enumerate}
+\item (4 points) Maximum and minimum.
+\item (9 points) First quartile Q1, median, and third quartile Q3.
+\item (3 points) Mean.
+\item (5 points) Mode.
+\item (5 points) Variance.
+\end{enumerate}
+
+\item (21 points) Based on the dataset of students’ score (file: {\tt data.online.scores.txt}), please normalize the mid-term scores using z-score normalization. We will refer to the original mid-term scores as {\sf midterm-original} and the normalized mid-term scores as {\sf midterm-normalized}. We will refer to the original finals scores as {\sf finals-original}.
+\begin{enumerate}
+\item (3 points) Compute and compare the variance of {\sf midterm-original} and {\sf midterm-normalized}, i.e., the midterm scores before and after normalization.
+\item (3 points) Given an original midterm score of 90, what is the corresponding score after normalization?
+\item (5 points) Compute the Pearson’s correlation coefficient between {\sf midterm-original} and {\sf finals-original}.
+\item (5 points) Compute the Pearson’s correlation coefficient between {\sf midterm-normalized} and {\sf finals-original}.
+\item (5 points) Compute the covariance between {\sf midterm-original} and {\sf finals-original}. 
+\end{enumerate}
+
+\item (31 points) Given the inventories of two libraries Citadel's Maester Library (CML) and Castle Black's library (CBL) (file: {\sf data.libraries.inventories.txt}), we will compare the similarity between the two libraries by using different proximity measures. The data for each library is for 100 books, and contains information on how many copies of each book each library has. When computing a similarity, 
+if the result is not an integer, then round it to 3 decimal places.
+\begin{enumerate}
+\item (15 points) Each library has multiple copies of each book. Based on all the books (treat the counts of the 100 books as a feature vector for each of the libraries), compute the Minkowski distance of the vectors for CML and CBL with regard to different $h$ values:
+\begin{enumerate}[(i)]
+\item  (5 points) $h = 1$.
+\item (5 points) $h=2$.
+\item (5 points) $h = \infty$.
+\end{enumerate}
+
+\item (8 points) Compute the cosine similarity between the feature vectors for CML and CBL.
+
+\item (8 points) Compute the Kullback-Leibler (KL) divergence between CML and CBL by constructing probability distributions for each library based on their feature vectors. With $i_1$ denoting the count of {\sf Book 1} in a library, the probability of a person randomly picking up {\sf Book 1} in that library is $\frac{i_1 }{i_1 + ... + i_{100}}$. The KL divergence will be computed based on these distributions for the libraries.
+\end{enumerate}
+
+
+\item (22 points) Table~\ref{tab:beerdiaper} is a summary of customers’ purchase history of diapers and beer. In particular, for a total of 3505 customers, the table shows how many bought both Beer and Diapers, how many bought Beer but not Diapers, and so on. For the problem, we will treat both Buy Beer and Buy Diaper as binary attributes.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c||c|c|} \hline
+             & Buy Diaper & Do Not Buy Diaper \\ \hline \hline 
+    Buy Beer  &  150 & 40 \\ 
+    Do Not Buy Beer & 15 & 3300 \\ \hline 
+    \end{tabular}
+    \caption{Contingency table for Beer and Diaper sales.}
+    \label{tab:beerdiaper}
+\end{table}
+\begin{enumerate}
+\item (4 points) Calculate the distance between the binary attributes Buy Beer and Buy Diaper by assuming they are symmetric binary variables.
+\item (4 points) Calculate the Jaccard coefficient between Buy Beer and Buy Diaper.
+\item (7 points) Compute the $\chi^2$ statistic for the contingency table.
+\item (7 points) Consider a hypothesis test based on the $\chi^2$ statistic where the null hypothesis is that Buy Beer and Buy Diaper are independent. Can you reject the null hypothesis at a significance level of $\alpha=0.05$? Explain your answer, and also mention the degrees of freedom used for the hypothesis test.
+\end{enumerate}
+
+
+\end{enumerate}
+
+
+\end{document}

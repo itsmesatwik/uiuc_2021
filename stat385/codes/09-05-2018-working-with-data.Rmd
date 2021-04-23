@@ -1,0 +1,290 @@
+---
+title: "Working with Data"
+author: "JJB + Course"
+date: "09/05/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Example: Getting Help
+
+To access a function's help documentation in the lower-right "Help" panel of
+_RStudio_, type into the _R_ **Console** (lower-left side): 
+
+```{r example-help-calls, eval = FALSE}
+?function_name
+help(function_name)
+```
+
+where `function_name` is the name of the function.
+
+For example, let's say we want to understand how the `median()` function works.
+We would want to use in the _R_ **Console** either:
+
+```{r help-question-mark-median}
+?median
+```
+
+or
+
+```{r help-function-median}
+help(median)
+```
+
+See the slides for an annotated version of _how_ to read the help documentation.
+
+**NB** You can _run_ the above code chunks without _knitting_ the document by
+using `Cmd/Cntrl + Enter` keyboard shortcut.
+
+**NB** is short for "note well"
+
+Also, consider using the `example(function_name)` function to automatically run
+examples found at the bottom of a function's help file. For example, the
+`median` function's examples can be run with:
+
+```{r}
+example(median)
+```
+
+## Exercise: Try getting help!
+
+Request the help documentation for `mean` with `help(function_name)`.
+
+```{r help-mean}
+
+### Code
+
+```
+
+Run the examples in the `mean` function's help documentation with `example(function_name)`
+
+```{r example-mean}
+
+### Code
+
+```
+
+
+# Shaping Data
+
+## Example: Using a data.frame
+
+Here we are first combining expressions together and _then_ assign the
+combination into a `data.frame`
+
+```{r dataframe-construction-subjects}
+subject_heights = data.frame(
+  id     = c(1, 2, 3, 55),
+  sex    = c("M", "F", "F", "M"),
+  height = c(6.1, 5.5, 5.2, 5.9)
+)
+```
+
+```{r}
+# Do not leave View active
+# in your code when you knit.
+
+# View(subject_heights)
+```
+
+
+## Example: Retrieving Data **Dim**ensions 
+
+We can individually retrieve **rows** and **columns** with:
+
+```{r data-show-individual-rows-columns}
+num_rows = nrow(subject_heights)
+num_columns = ncol(subject_heights)
+
+num_rows
+num_columns
+
+subject_heights
+```
+
+If we want to access _both_ values simultaneously, we would use:
+
+```{r data-show-combined-rows-and-columns}
+dim_info = dim(subject_heights)
+
+dim_info
+```
+
+The values correspond to the number of _rows_ and _columns_ respectively.
+
+## Example: Vectors
+
+```{r 1d-vectors}
+# Vector of character elements
+character_values = c("James", "summer", "Hi guys!")
+
+# Vector of numeric elements
+numeric_values = c(3.14, 8.2, -1.4123, 0.333)
+
+# Vector of integer elements
+integer_values = c(4L, -7L, 52L, 98L)
+
+# Create sequences: 1, 2, ... , 9, 10
+integer_sequence = 1L:10L
+```
+
+
+## Example: Combining Data
+
+Combining decimal number expressions
+
+```{r combining-decimal-values}
+numeric_values = c(6.1, 5.5, 5.2, 5.9)
+numeric_values 
+
+class(numeric_values)
+typeof(numeric_values)
+```
+
+Combining character/string expressions
+
+```{r combining-character-values}
+character_values = c("M", "F", "F", "M")
+character_values
+```
+
+Combining whole or integer number expressions
+
+```{r combining-integer-values, eval = FALSE}
+integer_values = c(1L, 2L, 3L, 55L)
+integer_values
+
+integer_values_colon = c(1L:3L, 55L)
+integer_values_colon
+
+# Verify integer
+class(integer_values)
+
+```
+
+Fill the above code chunk in. When done, remove the `eval = FALSE` from the code chunk options.
+
+We can re-use the previously written code earlier in the document instead of re-typing out what the values are. 
+
+```{r redo-dataframe-construction-subjects, eval = FALSE}
+subject_heights = data.frame(
+  id     = integer_values,
+  sex    = character_values,
+  height = height_values
+)
+```
+
+### Exercise: Construct data
+
+Please create the `data.frame` for `twtr_stock_prices`.
+
+_Hint_ to create a code chunk quickly, use `Cmd/Cntrl + Opt/Shift + I`
+
+
+Please create the `data.frame` for `champaign_weather`.
+
+
+### Exercise: Extract the **Dim**ensions
+
+Retrieve the dimensions of `twtr_stock_prices` using **functions that retrieve only one dimension at a time**.
+
+```{r twtr_stock-dimensions-two-functions}
+
+```
+
+
+Retrieve the dimensions of `champaign_weather` using **only one function**.
+
+```{r dims-champaign-weather}
+
+```
+
+
+## Example: Dynamically Using Data Attributes
+
+We can protect against a _bad_ data set by dynamically
+retrieving attributes and its name. 
+
+```{r calc_obs, echo = FALSE} 
+# Substitute your dataset where you see: `mtcars`
+data_nobs = nrow(mtcars)                 # N Observations
+data_nvars = ncol(mtcars)                # N Variables
+data_name = deparse(substitute(mtcars))  # NSE Magic
+``` 
+
+Did you know that there are `r data_nobs`
+observations and `r data_nvars` variables 
+contained within the `r data_name`  data set?
+
+# External Data
+
+
+```{r read-subject-heights, eval = FALSE} 
+subject_heights_csv = read.csv("subject_heights.csv")
+subject_heights_csv
+``` 
+
+**NB** Remember to remove the `eval = FALSE` from the code chunk options in order for the chunk to be evaluated.
+
+## Exercise: Read in the Europen CSV
+
+Read in the `subject_heights2.csv` that is in european-style. 
+
+```{r read-subject-heights-euro, eval = FALSE} 
+subject_heights_european = ______
+
+subject_heights_european
+``` 
+
+
+```{r, eval = FALSE}
+subject_misspecified = read.csv("subject_heights2.csv")
+
+subject_misspecified
+```
+
+How does the file format change vs. American?
+
+## Example: Read in Excel Spreadsheet
+
+```{r read-excel, eval = FALSE}
+# Install the R package (remove the #)
+# install.packages("readxl")
+
+# Load the library
+library("readxl")
+
+# See the names of excel sheets
+excel_sheets("subject_heights.xlsx")
+```
+
+```{r}
+# Read in Excel Data
+subject_heights_xl = read_excel("subject_heights.xlsx")
+
+subject_heights_xl
+```
+
+```{r}
+enrollment_info = read_excel("subject_heights.xlsx",
+                             sheet = "enrollment")
+
+enrollment_info
+```
+
+## Summaries
+
+Summaries are useful to perform to see how the data is loaded. 
+
+```{r summarize-data, eval = FALSE}
+summary(subject_heights_csv)
+```
+
+

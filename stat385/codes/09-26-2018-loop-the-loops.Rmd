@@ -1,0 +1,607 @@
+---
+title: "Loop-the-Loops"
+author: "JJB + Course"
+date: "09/26/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# View(mtcars)
+data = mtcars
+
+formula = mpg ~ hp
+formula
+
+mframe = model.frame(formula, data)
+mframe
+X = model.matrix(formula, mframe)
+X
+y = model.response(mframe)
+y
+```
+
+# Iteration
+
+## Sequences
+
+## Example: Sequence Generation
+
+```{r my_seq}
+ex_vec = c(5, 3, -2, 42)
+
+# Generate a sequence with colon
+1:length(ex_vec)
+
+# Generate a sequence using `seq`
+seq(1, length(ex_vec))
+
+# Generate a sequence with a vector
+seq_along(ex_vec)
+
+# Generate a sequence for a length
+seq_len(length(ex_vec))
+```
+
+
+## `while`
+
+## Example: Counting up to Three
+
+```{r while-up-to-three}
+counter = 0
+
+while( counter < 3) {
+  
+  message("start of loop counter:", counter)
+  
+  counter = counter + 1
+
+  message("end of loop counter:", counter)
+}
+
+counter
+```
+
+## Example: Gambler's Ruin
+
+
+By setting the seed, we can control the outcome of the random number generation.
+So, this example will always net me 11$ dollars under `seed = 7778`. What happens if we switch it to `seed = 4`? 
+
+```{r gamblers-ruin}
+set.seed(4)
+
+money = 5 
+
+while (money > 0 && money <= 10) {
+    message("I have ", money , "$! Let's gamble!")
+    coin_flip_result = rbinom(1, 1, 0.7)
+    if (coin_flip_result == 1) {
+        money = money + 1
+    } else {
+        money = money - 1
+    } 
+}
+message("I walked away with ", money , "$!!")
+```
+
+
+### Exercise: Counting down from 10
+
+```{r ex-countdown, eval = FALSE}
+counter = 10
+while ( counter > 0 ) { 
+    message("T-minus ", counter, " seconds until blast off!")
+    counter = counter - 1 # ___ __________
+}
+message("Blast off!")
+```
+
+Why the copy and paste approach is a poor substitute for a loop
+
+```{r}
+
+message("T-minus 10 seconds until blast off!")
+message("T-minus 9 seconds until blast off!")
+message("T-minus 8 seconds until blast off!")
+message("T-minus 7  seconds until blast off!")
+message("T-minus 6  seconds until blast off!")
+message("T-minus 5  seconds until blast off!")
+message("T-minus 4  seconds until blast off!")
+message("T-minus 3  seconds until blast off!")
+message("T-minus 2  seconds until blast off!")
+message("T-minus 1  seconds until blast off!")
+# message("T-minus 0  seconds until blast off!")
+
+```
+
+
+
+## Example: Loop to Infinity
+
+Please note, the example code chunks within this section are purposefully
+set to `eval = FALSE` as they will _never_ end. Please do not change
+this option. If you opt to run this code, please press the "Stop" icon
+that appears in the upper-right corner of the **console** to exit.
+
+```{r bank-loans, eval = FALSE}
+money = 5 
+while (money <= 10) {
+    message("I have ", money , "$! Let's gamble!")
+    
+    # Gambler with bad luck always loses… 
+    money = money - 1
+}
+message("I walked away with ", money , "$!!")
+```
+
+```{r never-ending-loop, eval = FALSE}
+# The loop failed because of a never-ending condition… 
+while (TRUE) {
+    message("I have ", money , "$! Let's gamble!")
+  
+    # Gambler with bad luck always loses ... 
+    money = money - 1
+}
+```
+
+
+## Example: Sequence Convergence
+
+```{r geom-series-analytical}
+# Values for Geometric Summation
+a = 2
+r = 0.5
+
+# Compute formula
+a/(1 - r)
+```
+
+Let's see what happens when we individual compute the terms.
+
+```{r individual-elements-geom-series}
+# Computing terms individually
+round(a*r^(0:20), 4)
+```
+
+Notice, each of these terms is significantly different from the next up until a specific point. 
+
+```{r geom-series-with-cumsum}
+# Value after successively computing and adding terms.
+round(cumsum(a*r^(0:20)), 4)
+```
+
+In essence, we are hitting a precision threshold between consecutive terms given by 
+
+```{r default-machine-precision}
+.Machine$double.eps
+```
+
+This gives us the ability to compare up to 1e-15 places accurately.
+
+```{r show-precision}
+sprintf("%.15f", 1 + c(-1, 1)*.Machine$double.eps)
+```
+
+So, this leads to the following issue with comparing numeric (e.g. floating point numbers):
+
+```{r epsilon-neighborhood-converges}
+# Not equivalent
+(0.10 + 0.05) == 0.15
+
+# Using an epsilon neighborhood allows us to see the difference
+all.equal(0.10 + 0.05, 0.15)
+```
+
+We can see convergence to the analytical solution get reached via the graph.
+
+```{r sequence-convergence-graph}
+# Make a graph!
+series_data = data.frame(index_of_summation = 0:20,
+               summed_values = round(cumsum(a*r^(0:20)), 4)
+)
+
+library("ggplot2")
+ggplot(series_data, aes(index_of_summation, summed_values)) +
+  geom_point() +
+  geom_hline(yintercept=4, color="red") +
+  annotate("text", label = "True Value", x = 9.25, y = 4.15, size = 5) +
+  labs(x = "Index of Summation (k)",
+       y = "Summed Value") +
+  theme_bw() + 
+  theme(legend.position = "none", 
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 20)
+        )
+
+#ggsave("summed_plot.png")
+```
+
+
+Thus, we can use a `while` loop to obtain the solution up to a specific number's precision. 
+
+```{r while-precision}
+# Notice, this computation is done
+# for the first two parts of the series
+
+eps = 0.001                   # Set a discrepancy 
+counter = 1                   # Keep track of number of iterations
+
+x1 = a; x2 = a * r            # Compute first two terms separately
+summed = x1 + x2              # Sum the terms
+
+message("x1 = ", x1, ", x2 = ", x2, ", summed = ", summed)
+
+while( abs(x1 - x2) >= eps) { # Any difference between terms?
+  
+  message("start of loop: x1 = ", x1, ", x2 = ", x2, ", summed = ", summed)
+
+  counter = counter + 1       # Count loop iteration
+  x1 = x2                     # Set last computed term to x1
+  x2 = a*r^counter            # Compute new term
+  summed = summed + x2        # Add new term to summation
+  
+  message("end of loop: x1 = ", x1, ", x2 = ", x2, ", summed = ", summed)
+}
+
+summed; counter               # Display summation and n iterations
+```
+
+## Example: Positional Access with `while`
+
+```{r}
+values = c(-4, 2, 5, 9, 0)            # Values to add together
+summed = 0                            # Summed value
+counter = 1                           # Keep track of number of iterations
+
+while( counter < length(values)) {    # Any elements left?
+  summed = summed + values[counter]   # Add new term to summation
+  counter = counter + 1               # Count loop iteration
+}
+
+summed                                # Display summation and n iterations
+
+sum(values)                           # Check against built-in function
+```
+
+
+
+## `for` loops
+
+## Example: Summations
+
+$$\sum\limits_{i = 1}^n {{x_i}}  = {x_1} + {x_2} +  \cdots  + {x_n}$$
+
+```{r ex-for-loop}
+# Define vector to sum
+x = c(5, 3, -2, 42)
+# Define a variable to hold the result of values added together
+summed = 0
+
+# Sum values together
+for(index in seq_along(x)) {
+  summed = summed + x[index]
+}
+
+# End result of summation
+summed
+
+# This is equivalent to sum()
+sum(x)
+```
+
+
+```{r ex-for-loop}
+# Define vector to sum
+x = c(5, 3, -2, 42)
+# Define a variable to hold the result of values added together
+summed = 0
+
+# Sum values together
+for(x_value in x) {
+  summed = summed + x_value
+}
+
+# End result of summation
+summed
+
+# This is equivalent to sum()
+sum(x)
+```
+
+```{r ex-for-loop-strings}
+
+character_names = c("McDreamy", "McSteamy", "McPiper")
+
+for(index in seq_along(character_names) ) {
+  message("Did you know ", character_names[index], " is great?")
+}
+
+
+message("\nMore useful variant! \n")
+for(x_value in c("McDreamy", "McSteamy", "McPiper")) {
+  message("Did you know ", x_value, " is great?")
+}
+```
+
+### Exercise: Adding vectors together
+
+```{r create-element-wise-add, eval = FALSE}
+# Define two vectors
+x = c(8L,-55L, 42L, 0L)
+y = c(3L,-9L, 65L, 2L)
+
+# Setup storage required when using a for loop
+n_obs = length(x)
+z = numeric(n_obs)
+
+for (i in seq_along(x)) {                                     
+   z[i] = x[i] + y[i]
+}
+
+z
+
+# Vectorized approach
+x + y
+```
+
+Extension: What happens if the lengths between these vectors differ?
+
+
+```{r}
+# Define two vectors
+x = c(8L,-55L, 42L, 0L)
+y = c(3L,-9L, 65L) # We removed 1 value from y.
+
+# These vectors are not the same length.
+
+# Setup storage required when using a for loop
+n_obs = length(x)
+z = numeric(n_obs)
+
+for (i in seq_along(x)) {                                     
+   z[i] = x[i] + y[i]
+}
+
+z
+
+```
+
+
+
+### Exercise: Loop index protection
+
+```{r protect-your-indices}
+a = numeric()
+value = 0
+
+for(i in 1:length(a)) {
+  message("This loop ran using the colon operator (`:`)")
+
+  value = value + i 
+}
+
+value
+
+for( i in seq_along(a)) {
+  message("This loop ran using seq_along()")
+  value = value - i
+}
+
+value
+```
+
+Each of the following statements are equivalent. Generally, one statement can be said
+to immediately expand to the other.
+
+```{r indices-hints}
+# All the same statements!
+1:length(a)
+1:0
+seq(1, 0)
+c(1, 0)
+```
+
+
+
+## Example: Adding only positive numbers
+
+```{r add-pos}
+x = c(5, 3, -2, 42)
+summed = 0 
+
+for(index in seq_along(x)) {
+  if(x[index] < 0) {
+    next
+  }
+  
+  summed = summed + x[index]
+}
+```
+
+
+### Exercise: Adding non-na values
+
+```{r add-non-na, eval = FALSE}
+a = c(-1L, -24L, NA, 11L, 0L, NA)
+summed = 0
+
+for (i in seq_len(length(a))) {  
+    if ( is.na(a[i]) ) {
+      next
+    }                                 
+    summed = summed + a[i]
+}
+summed
+```
+
+```{r add-non-na-hints, eval = FALSE}
+# Step 1: 
+# Found non-missing values in a
+!is.na(a)
+
+# Step 2:
+# Subset a to retrieve only the values that are non-missing
+a[!is.na(a)]
+
+# Step 3:
+# Add together all the non-missing values
+sum(a[!is.na(a)])
+
+```
+
+## Example: Classifying Data
+
+```{r iterative-classification}
+## Construct BP data
+bp_data = data.frame(
+  Subject_ID = c("S005", "S130", "S023", "S098", "S035", "S007", "S104"),
+  Sex        = c("Male", "Female", "Male", "Male", "Male", "Female", "Female"),
+  Systolic   = c(110, 141, 125, 168, 115, 122, 135)
+)
+
+# Count number of observations
+n_obs = nrow(bp_data)
+
+# Create an empty character vector (e.g., "")
+classify_vector = character(n_obs)
+
+# Iterate through a vector containing positional indexes
+for (i in seq_len(n_obs)) {
+  # Retrieve ith value being tested to avoid multiple subsets in condition
+  test_obs_value = bp_data$Systolic[i]
+  # Classify bp and save it into the vector at position i
+  classify_vector[i] =  if (test_obs_value < 120) {
+    "Normal"
+  } else if (test_obs_value < 129) {
+    "Elevated"
+  } else if (test_obs_value < 139) {
+    "Stage 1"
+  } else {
+    "Stage 2"
+  }
+}
+
+# View classifications
+classify_vector
+
+# Save classifications into the data.frame
+bp_data$BP_Type = classify_vector
+
+# Output data.frame into markdown table
+knitr::kable(bp_data)
+```
+
+
+## Example: Matrix Multiplication with Built-in Binary Operator
+
+```{r matrix-multiplication-iteration}
+A = matrix(seq(1, 6), nrow = 2, ncol = 3)
+A
+B = matrix(seq(1, 6), nrow = 3, ncol = 2)
+B
+
+C = A %*% B
+C
+```
+
+## Example: Nested Iteration for Matrix Multiplication
+
+```{r nested-matrix-multiplication}
+A = matrix(seq(1, 6), nrow = 2, ncol = 3)
+B = matrix(seq(1, 6), nrow = 3, ncol = 2)
+C = matrix(0, nrow = nrow(A), ncol = ncol(B))
+if (ncol(A) == nrow(B)) {
+  for (i in seq_len(nrow(A))) {
+    for (j in seq_len(ncol(B))) {
+      for (k in seq_len(ncol(A))) {
+        C[i, j] = C[i, j] + A[i, k] * B[k, j]
+      }
+    }
+  }
+} else {
+  stop("matrices `A` and `B` dimensions are improper")
+}
+
+# %*% is the binary operator for matrix multiplication
+all.equal(C, A %*% B)
+
+C
+```
+
+
+
+### Exercise: Fill a matrix with a constant
+
+To design two nested `for` loops that populate a
+matrix with a constant `my_val`. 
+
+```{r ex-fill-matrix}
+
+```
+
+
+## `repeat`
+
+## Example: Counting up to Four
+
+```{r repeat-count-to-four}
+counter = 0
+
+repeat {
+  counter = counter + 1
+  
+  if(counter > 3) {
+    break
+  }
+}
+
+counter
+```
+
+## Example: Who is the fairest of them all? 
+
+Here we are forcing the user to answer a question. To avoid a never-ending loop when
+we knit the document -- since we cannot provide an input message -- we
+opt to disable the evaluation. 
+
+```{r repeat-force-answer, eval = FALSE}
+repeat {
+  
+  input = readline("Who is the fairest of them all? ")
+  
+  if (input == "JJB" || input == "Balamuta") {
+    message("Correct! You're future looks brighter.")
+    break
+  } else {
+    message("I'm sorry Human, I'm afraid that's incorrect.")
+  } 
+}
+```
+
+### Exercise: Adding numbers until first NA
+
+Should this really be a `repeat` loop? 
+
+```{r repeat-add-numbs, eval = FALSE}
+x = c(9L, 88L, -2L, NA, 0L, NA)
+__________ = ______________
+__________ = ______________
+repeat { 
+  message("On iteration: ", counter, ", x[counter] = ", x[counter])
+    
+  if (    _________________________ ) {
+        __________
+    }
+    __________ = __________ ___ __________
+}
+__________
+```

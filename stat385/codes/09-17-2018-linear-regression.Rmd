@@ -1,0 +1,428 @@
+---
+title: 'Linear Regression'
+author: "JJB + Course"
+date: "9/19/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+
+# SLR 
+
+
+## Example: Minimizing a Value
+
+```{r}
+
+beta = c(2, 5)
+
+y = c(8, 3, 2, -1)
+
+x = c(4.5, 3.9, 18.2, 19.9)
+
+estimating_rss = function(x, y, beta) {
+  sum((y - (beta[1] + x*beta[2]))^2)
+}
+
+estimating_rss(x, y, beta)
+
+estimating_rss(x, y, c(3, 4))
+
+
+estimating_rss(x, y, c(3.5, 3.8))
+
+```
+
+
+## Example: Simulating SLR Data
+
+```{r}
+# Simulate data
+
+# Set seed for reproducibility
+set.seed(9123)
+
+# Number of observations
+n = 500               
+
+X = cbind(1, rnorm(n, mean = 2))             # Design matrix: n x 2 
+beta = c(2.5, 4)                             # True beta values: 2 x 1
+y = X[,1]*beta[1] + X[,2]*beta[2] + rnorm(n, sd = 3) # Response variable with error: n x 1
+```
+
+```{r, echo = FALSE}
+library("ggplot2")
+df = data.frame(x = X[, 2], y = y)
+ggplot(df, aes(x, y)) +
+  geom_point() +
+  labs(title = "Generated Data",
+       subtitle = paste("with", n, "observations"),
+       x = "Simulated Predictor Values",
+       y = "True Response")
+```
+
+```{r}
+# Set seed for reproducibility
+set.seed(9123)
+
+# Mean of Response (y)
+y_mu = mean(y)
+
+# Mean of Predictor (x)
+x = X[, 2]
+x_mu = mean(x)
+
+# Estimate Slope
+beta1_hat = 
+       sum((x - x_mu) * (y - y_mu)) /
+         sum((x - x_mu) ^ 2)
+
+# Estimate Intercept
+beta0_hat = 
+       y_mu - beta1_hat * x_mu
+
+cbind(c(beta0_hat, beta1_hat), beta)
+```
+
+
+```{r, echo = FALSE}
+library("ggplot2")
+df = data.frame(x = X[, 2], y = y)
+ggplot(df, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Estimated Coefficients on Generated Data",
+       subtitle = paste("with", n, "observations"),
+       x = "Simulated Predictor Values",
+       y = "True Response")
+```
+
+## Example: Optimizing for SLR
+
+```{r}
+set.seed(8812)
+beta_hat = rep(0, 2)                         # Provide initial beta value: 2 x 1
+
+# Write the cost function to minimize
+min_rss_slr = function(par, X, y) {  
+  rss = sum((y - (X[,1]*par[1] + X[,2] * par[2]))^2)
+  return(rss) 
+}
+
+# Perform the minimization
+model_opt = optim(par = beta, fn = min_rss_slr,
+                  method = "BFGS", control=list(trace=TRUE),
+                  X = X, y = y)
+
+# Check parameter difference
+cbind(model_opt$par, beta)
+```
+
+```{r}
+ggplot(data.frame(x = c(1, 2, 3),
+                  y = c(4545.000693, 4542.177432, 4545.000693)),
+       aes(x, y)) +
+  geom_point() + geom_line() +
+  geom_point(data = data.frame(x = 2, y = 4542.177432), color = "red", size =3 ) +
+  labs(title = "Optimization of RSS",
+       subtitle = "using the BFGS optimizer", 
+       y = "RSS value",
+       x = "Iteration")
+```
+
+# MLR
+
+## Example: Fitting a Linear Regression with `lm`
+
+Fitting an ordinary linear model in _R_ uses:
+
+```{r, eval = FALSE}
+model_fit = lm( y ~ x1 + x2, data = data_set )
+```
+
+where:
+
+- the first argument is a `formula` with the dependent variable  
+to left of the `~`, read "is modeled as", and the independent variables to the right
+- the second argument specifies the data set.
+
+Inside the `formula`, model terms can be combined using `+` to give:^[${\beta _0}$ represents the intercept term and is automatically included.]
+
+$${y_i} = {\beta _0} + {\beta _1}{x_{i,1} } + {\beta _2}{x_{i,2} } + {\varepsilon _i}$$
+
+## Example: Fits with `lm`
+
+```{r}
+model_fit = lm(mpg ~ wt + qsec, data = mtcars)
+
+model_fit
+```
+
+## Example: The Formula Object and Design Matrix
+
+```{r}
+# Add the intercept
+X = model.matrix(mpg ~ wt + qsec, data = mtcars)
+head(X)
+
+# Remove the intercept
+X_noint = model.matrix(mpg ~ wt + qsec - 1, data = mtcars)
+head(X_noint)
+```
+
+## Example: Inference with `lm`
+
+```{r}
+summary(model_fit)
+```
+
+## Example: Calling `lm.fit` with pre-made `X` and `y`
+
+```{r}
+model_fit_design = lm.fit(x = X, y = matrix(mtcars$mpg))
+
+
+model_fit_design$coefficients
+model_fit$coefficients
+```
+
+## Example: Predictions
+
+Predict the responses with new data using the `predict` function
+
+```{r}
+future_car = data.frame(wt = 0.5,
+                      qsec = 12)
+
+y_hat = predict(model_fit, new_data = future_car)
+
+head(y_hat)
+```
+
+**Note:** `predict` is also a generic function.
+
+
+# Factors and the Design Matrix
+
+## Example: Factors in Data Frames
+
+```{r}
+id     = c(1, 2, 3, 55)
+sex    = c("M", "F", "F", "M")
+height = c(6.1, 5.5, 5.2, 5.9)
+
+subject_heights_vec = data.frame(
+  id = id,
+  sex = sex,
+  height = height
+)
+
+# Notice sex is a factor inside the data.frame
+str(subject_heights_vec)
+
+# But outside, on the vector it is a character
+class(sex)
+
+summary(subject_heights_vec)
+summary(sex)
+```
+
+
+```{r}
+# Data frame without factors
+subject_heights = data.frame(
+   id         = c(1, 2, 3, 55),
+   sex      = c("M", "F", "F", "M"),
+   height = c(6.1, 5.5, 5.2, 5.9),
+   stringsAsFactors = FALSE
+)
+
+# Data Frame with Factors
+subject_heights_fct = data.frame(
+   id         = c(1, 2, 3, 55),
+   sex      = c("M", "F", "F", "M"),
+   height = c(6.1, 5.5, 5.2, 5.9),
+   stringsAsFactors = TRUE
+)
+```
+
+Notice output difference between `character` and `factor`
+
+```{r}
+summary(subject_heights)
+summary(subject_heights_fct)
+```
+
+This is shown in the structure between the two data.frames
+
+```{r}
+str(subject_heights)
+str(subject_heights_fct)
+```
+
+## Example: Factor Vector
+
+```{r}
+sex = c("M", "F", "F", "M") # Character vector
+sex_factor = factor(sex)    # Convert from character to factor
+as.numeric(sex_factor)      # Retrieve levels
+```
+
+
+```{r}
+letters
+```
+
+
+```{r example-of-binary-op, eval = FALSE}
+# This will fail.
+3 * "F"
+```
+
+```{r}
+3 * 1
+```
+
+
+### Exercise: Make a Design Matrix
+
+```{r}
+class_seating = data.frame(
+  distance = c("back", "back", "front", "back", "front", "front"),
+  side = c("right", "left", "middle", "middle", "right", "left")
+)
+```
+
+```{r}
+# Check with R ...  (recall -1 to remove index)
+```
+
+## Example: Factor Math Failures
+
+```{r, eval = FALSE}
+x = c(3L, -1L, 22L, 9L, 0L, 22L, 9L) # Create Integer Vector
+
+my_factor = as.factor(x)             # Cast integer to factor
+
+my_factor + 10                       # Error in an unexpected way
+
+min(my_factor)                       # Show stopping error
+```
+
+## Example: Exploring a Factor
+
+```{r create-a-factor}
+x = c(3L, -1L, 22L, 9L, 0L, 22L, 9L)        # Create Integer Vector
+
+data_factor = as.factor(x)                    # Cast integer to factor
+```
+
+```{r show-factor-vector}
+data_factor
+```
+
+Show the common levels
+
+```{r show-levels}
+levels(data_factor)
+```
+
+Modifying a factor is problematic if values are outside of the predefined levels.
+
+```{r modify-levels}
+# Modify with a pre-existing level
+data_factor[1] = 9
+
+# Error if level isn't present already
+data_factor[2] = 18
+data_factor
+```
+
+Recover values from levels
+
+```{r levels-recovery}
+x_recovery = levels(data_factor)[data_factor]
+x_recovery
+class(x_recovery)
+```
+
+```{r coerce-level-info}
+x_cast = as.numeric(x_recovery)         # Cast to appropriate type
+
+x_cast + 10
+```
+
+
+### Example: Subset process
+
+Factors' are augmented. 
+
+```{r}
+str(data_factor)
+```
+
+Note: Levels returns the actual labels for the factor
+
+```{r level-info-for-factor}
+levels(data_factor)
+```
+
+By supplying the factor vector inside a subset, we are repeatedly selecting specific
+positions. As a result, we are taking the p-unique levels and expanding them to the n-observations.
+
+```{r expand-to-levels}
+level_data = levels(data_factor)[data_factor]
+level_data
+```
+
+```{r view-expanded-level-info}
+class(level_data)
+```
+
+
+```{r coerce-from-character}
+as.numeric(level_data)
+```
+
+
+```{r}
+levels(data_factor)[as.numeric(data_factor)]
+```
+
+
+## Example: Ordered Factors
+
+```{r}
+yields = c("hi", "low", "med", "low", "med", "low") 
+
+# Factor without Order
+yields_fct = factor(yields)
+yields_fct
+
+# Notice order isn't set appropriately
+yields_order = factor(yields, ordered = TRUE) # Add Order
+yields_order
+
+# Correct ordering from low to high
+yields_fixed_order = factor(yields, levels = c("low", "med", "hi"),  ordered = TRUE)
+yields_fixed_order
+```
+
+## Exercise: To be a Factor or an Ordered Factor
+
+Determine whether the following should be either 
+a factor or an ordered factor
+
+**Months:** (Jan, Feb, … , Nov, Dec)
+
+
+**Colors:** (red, orange, .. , black, green)
+
+
+
+**Alphabet:** (a, b, ... , y, z)
+
+

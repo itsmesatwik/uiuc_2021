@@ -1,0 +1,335 @@
+---
+title: "Rcpp"
+author: "JJB + course"
+date: "12/03/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# Rcpp
+
+## Example: Saying hello
+
+```{Rcpp hello_world_ex}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+void hello_world_cpp() {
+  Rcout << "Hello R/C++ World!\n";  
+}
+```
+
+## Example: Embedding Rcpp into RMarkdown.
+
+To use _Rcpp_ code within _RMarkdown, we change `{R}` to `{Rcpp}` within the code chunk block.
+
+````
+```{Rcpp}
+// Rcpp code here
+```
+````
+
+## Example: Calling the C++ Function within *R*
+
+```{r}
+# Call C++ Code like a normal R function
+hello_world_cpp()    
+```
+
+## Example: Embedding `is_odd_cpp()` in _R_
+
+```{Rcpp}
+#include<Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+bool is_odd_cpp(int n = 10) {// function definition
+  bool v = (n % 2  == 1);    // modulus check
+  return v;                  // return result
+}
+```
+
+## Example: Calling `is_odd_cpp()` in _R_
+
+```{r}
+is_odd_cpp()
+
+is_odd_cpp(10)
+
+is_odd_cpp(3)
+```
+
+### Exercise: Creating a scalar version of `is_divisible_by()`
+
+Modify the `is_odd_cpp()` to `is_divisible_by()`, which checks to see if a number is divisible by another.
+
+```{Rcpp}
+#include<Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+bool is_divisible_by(int num, int divisor) {
+  bool v = (num % divisor == 0);    // modulus check
+  return v;
+}
+```
+
+```{r}
+is_divisible_by(20, 3)
+```
+
+
+## Example: Vectorizing Is Odd in C++
+
+`int` can only hold one value. What if we wanted to process a vector?
+
+```{Rcpp}
+#include<Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+LogicalVector is_odd_vec_cpp(IntegerVector x) {
+  int n = x.size();            // number of elements
+  LogicalVector v(n);          // logical vector
+  for(int i = 0; i < n; i++) { // process each value
+    v[i] = (x[i] % 2  == 1);   // modulus check
+  }
+  return v;
+}
+```
+
+Differences:
+
+```{r, eval = FALSE}
+is_odd_cpp(1:5)
+# Error in is_odd_cpp(1:5) : Expecting a single value: [extent=5].
+```
+
+```{r}
+is_odd_vec_cpp(1:5)
+```
+
+
+## Example: Type Sensitivity
+
+```{r}
+add_r = function(a, b) {
+  return(a + b)
+}
+
+add_r(0L, 2L)   # Remember L means integer!
+add_r(2.5, 1.1) # Double/numeric
+```
+
+```{Rcpp, eval = TRUE}
+#include <Rcpp.h>
+using namespace Rcpp;           // Import Statements
+
+// [[Rcpp::export]]
+double add_cpp(double a, double b) { // Declaration
+  double out = a + b; // Add `a` to `b`
+  return out;         // Return output
+}
+```
+
+```{r}
+add_cpp(0L, 2L)   # Integers into double
+add_cpp(2.5, 1.1) # Double into double
+```
+
+### Example: Calling a C++ Function with different types
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;           // Import Statements
+
+// [[Rcpp::export]]
+double add_cpp(double a, double b) { // Declaration
+  double out = a + b;                // Add `a` to `b`
+  return out;                        // Return output
+}
+
+// [[Rcpp::export]]
+int add_cpp_int(int a, int b) { // Declaration
+  return add_cpp(a, b);         // Call previous function
+}
+```
+
+```{r}
+add_cpp_int(2.5, 1.1)  # Call in *R*
+```
+
+## Example: Loops
+
+Consider the mean:
+
+```{r}
+muR = function(x) {
+  sum_r = 0
+  for (i in seq_along(x)) {
+    sum_r = sum_r + x[i]
+  }
+  
+  sum_r / length(x)
+}
+```
+
+**C++** Implementation
+
+```{Rcpp mean}
+#include <Rcpp.h>
+using namespace Rcpp;           // Import Statements
+
+// [[Rcpp::export]]
+double muRcpp(NumericVector x) { // Declaration
+  
+  int n = x.size();              // Find the vector length
+  double sum_x = 0;              // Set up storage
+
+  for(int i = 0; i < n; ++i) {   // For Loop in C++
+    // Shorthand for sum_x = sum_x + x[i];
+    sum_x += x[i];   
+  }
+  return sum_x / n;             // Return division
+}
+```
+
+Verifying equality:
+
+```{r}
+# Done in *R*
+
+set.seed(112)                # Set seed
+
+x = rnorm(10)                # Generate data
+
+all.equal(muRcpp(x), muR(x)) # Test Functions
+```
+
+## Example: Squaring Numbers
+
+The squaring operation switches from `base^exp` to `pow(base, exp);`
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector square_numbers(NumericVector x) {
+  
+  int n = x.size();
+  NumericVector res(n);
+  
+  for(int i = 0; i < n; i++) {
+    res[i] = pow(x[i], 2.0); // x^2
+  }
+  
+  return res;
+}
+```
+
+### Exercise: Compute the Sum of Squares
+
+Modify the squaring operation given previously such that is computes
+the sum of squares for $x$. 
+
+\[\sum\limits_{i = 1}^n {{{\left( {{x_i} - \bar x} \right)}^2}} \]
+
+**Recall:** C++ indices start at 0 **NOT** 1. 
+
+```{Rcpp}
+#include<Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double mean_cpp(NumericVector x) {
+  
+  // We need to find the length of x
+  int n = x.size(); // counts the elements in x
+  
+  // Set up a variable to store summation.
+  double summed_values = 0;
+  
+  for(int i = 0; i < n; ++i) {
+    // Rcout << "We are on iteration: " << i << std::endl;
+    
+    summed_values += x[i];
+  }
+  
+  return(1.0/n * summed_values);
+  
+}
+
+// [[Rcpp::export]]
+double sum_of_squares(NumericVector x) {
+  
+  // Calculate the mean.
+  double x_mean = mean_cpp(x);
+  
+  // We need to find the length of x
+  int n = x.size(); // counts the elements in x
+  
+  // Set up a variable to store summation.
+  double summed_values = 0;
+  
+  for(int i = 0; i < n; ++i) {
+    summed_values += pow(x[i] - x_mean, 2.0); // (x[i] - x_mean)^2
+  }
+  
+  return summed_values;
+}
+```
+
+```{r}
+
+x = 1:1e6
+
+mean(x)
+
+mean_cpp(x)
+
+sum_of_squares(x)
+
+sum( (x - mean(x))^2 )
+
+```
+
+
+```{r}
+out_bench =
+  microbenchmark::microbenchmark(cpp = sum_of_squares(x), vec =  sum( (x - mean(x))^2 ) )
+
+library("ggplot2")
+
+autoplot(out_bench)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,357 @@
+---
+title: "Tidy Data"
+author: "JJB + Course"
+date: "10/03/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Pipe Operator
+
+## Example: Piping Operator
+
+```{r example-funcs}
+# install.packages("magrittr")
+library("magrittr")
+4 %>%           # Take the number four and, then
+    sqrt()      # find the square root
+
+# Same as
+# sqrt(4)
+
+c(7, 42,  1,  25) %>%   # Combine four elements and, then
+    log() %>%           # take the natural log and, then
+    round(2) %>%        # round to the second decimal and, then
+    diff()              # take the difference between consecutive elements 
+
+# Same as
+# diff(round(log(c(7,42,1,25)), 2))
+```
+
+## Example: Multi-step forms
+
+```{r multi-step-funcs}
+# Embedded / Nested Functions
+set.seed(821)
+mean(rnorm(10))
+
+
+# Temporary Intermediate Variables
+set.seed(821)
+rand_nums = rnorm(10)
+mean_nums = mean(rand_nums)
+
+# Piped
+# install.packages("magrittr")
+library("magrittr")
+set.seed(821)
+rnorm(10) %>%   # Generate 10 random values from a normal and, then 
+    mean()              # take the mean.
+```
+
+## Example: Inside-out form of Pipe
+
+**Embedded/Nested** Function Calls
+
+```{r nested-funcs, eval = FALSE}
+pickup(                          # Step 5
+  goto(                          # Step 4
+    order(                       # Step 3
+      store(                     # Step 2
+        drink("Java Chip Frap"), # Step 1
+        loc = "Green St.")
+      )                                          
+    )                                            
+  )
+```
+
+
+**Piped**
+
+```{r piped-funcs, eval = FALSE}
+"Java Chip Frap" %>% 
+  drink() %>%                  # Step 1
+  store(loc = "Green St.") %>% # Step 2
+  order() %>%                  # Step 3
+  goto() %>%                   # Step 4
+  pickup()                     # Step 5
+```
+
+
+## Example: Pipe to Other Arugments
+
+```{r pipe-other-args}
+subtract_vals = function(x, y) {
+   x - y
+}
+
+x = 7; y = 4
+subtract_vals(x, y)
+
+x %>% subtract_vals(y)   # Default, e.g. subtract_vals(x, y)
+
+x %>% subtract_vals( . , y) # Default, e.g. subtract_vals(x, y)
+                   # ^ Period specifies where the value should go
+
+y %>% subtract_vals(x, . ) # Pipe y to second argument, e.g. subtract_vals(x, y)
+                     # ^ Period specifies where the value should go
+
+x %>% subtract_vals(y, . ) # Pipe x to second argument, e.g. subtract_vals(y, x)
+                     # ^ Period specifies where the value should go
+```
+
+## Example: Accessing Values in Data Mid-Pipe
+
+```{r pipe-data-access}
+my_df = data.frame(x = c(0, 1), y = c(2, 3))
+
+my_df %>% .[["x"]]
+        # ^ Period specifies where the data frame should go
+
+# Equivalent to
+my_df$x
+my_df[["x"]]
+my_df[[1]]
+
+# Nested period usage to retrieve the last column
+my_df %>% .[[ncol(.)]]
+        # ^       ^ Period specifies where the data frame should go
+
+# Equivalent to
+my_df[[ncol(my_df)]]
+```
+
+
+### Exercise: Working with Pipes
+
+Make the following pipeable
+
+```{r}
+# install.packages("dplyr")
+library("dplyr")
+
+# How can we transform this embedded code statement?
+tail(filter(iris, Petal.Width > mean(Petal.Width)))
+
+# We want to transform it using %>%
+
+tail(
+  filter(
+    iris, Petal.Width > mean(Petal.Width)
+    )
+  )
+
+# Take the inside result and switch it with the outside portion
+# a.k.a inverting the function order
+
+iris %>%
+  filter(Petal.Width > mean(Petal.Width)) %>%
+  tail()
+
+
+```
+
+Write a pipe that provides the `sqrt` of `2+2`
+
+```{r}
+sqrt(2 + 2)
+
+2 + 2 %>%
+  sqrt()
+
+2 + sqrt(2)
+
+
+(2 + 2) %>%
+  sqrt()
+```
+
+
+## Example: Enrollment Untidy to Tidy
+
+```{r transform-enrollment}
+# install.packages("tidyr")
+library("tidyr")
+
+# Untidy Data
+enrolled_fa17 = data.frame(
+  undergrads = c(18345, 15267, 12),
+  profs = c(352, 640, 0),
+  grads = c(7173, 6028, 9),
+  gender = c("Men", "Women", "Unknown")
+)
+
+# Why do we need to include gender inside the data.frame? 
+
+# Tidy the data
+enrolled_fa17_tidy = gather(enrolled_fa17,
+                              key = "Year",       # What the key is
+                              value = "Enrolled", # Specify what the _third variable_ should be
+                              undergrads:grads)   # Take variables from undergrads to grads
+                                                  # similar to seq(from, to)
+
+enrolled_fa17_tidy
+```
+
+## Example: Alternative Meanings - ChickWeights
+
+```{r transform-chicks}
+# install.packages("tidyr")
+library("tidyr")
+
+# "Long"-form or "Tidy Data"
+head(ChickWeight)
+
+# "Wide"-form or "Messy data"
+ChickWeight_wide = ChickWeight %>% 
+  spread(Time, weight)
+
+# Check data
+head(ChickWeight_wide)
+
+# Recover "long"-form or "Tidy Data"
+ChickWeight_long = ChickWeight_wide %>% 
+  gather(key = Time,      # Key for the key/value pairing
+         value = weight,  # Column for measurements
+         `0`:`21`)        # Column seleciton
+
+
+# Check data
+head(ChickWeight_long)
+```
+
+## Example: Alternative Meanings - Science!
+
+Load in "Wide Data"
+
+```{r load-wide-data}
+experiment = read.table(header=TRUE, text='
+ subject sex control a b
+       S1   F     4.2  4.1  2.2
+       S2   M     5.9  7.2  6.8
+       S3   M     9.1  9.8  10.2
+       S5   F     2.1  23.5  5.2
+')
+
+# Show wide-experiment data
+experiment
+```
+
+Convert experiment data to long format
+
+```{r wide-to-long-exp}
+experiment_long = gather(experiment, condition, measurement, control:b)
+
+# Example of Wide Format
+head(experiment_long)
+```
+
+
+### Exercise: Making a Data Set Messy
+
+Make the `mtcars` data set messy by converting it to:
+
+```
+#        model type   value
+# 1 AMC Javelin  mpg  15.200
+# 2 AMC Javelin  cyl   8.000
+# 3 AMC Javelin disp 304.000
+# 4 AMC Javelin   hp 150.000
+# 5 AMC Javelin drat   3.150
+# 6 AMC Javelin   wt   3.435
+```
+
+```{r convert-mtcars-data-to-long, eval = FALSE}
+library("tidyr")
+
+rownames(mtcars)
+# Move the rowname to a variable name inside the data set.
+mtcars$model = rownames(mtcars)
+head(mtcars)
+
+mtcars_long = mtcars %>%
+  gather(key = "____", value = "____", ____:____)
+
+# In IDE data viewer
+# View(mtcars_long)
+```
+
+Now, fix the data by converting it back.
+
+```{r convert-mtcars-data-to-wide, eval = FALSE}
+mtcars_wide = mtcars_long %>%
+  spread(key = "_____", value = "____")
+
+head(mtcars_wide)
+```
+
+
+## Example: Splitting Values - Location Data
+
+```{r breakdown_loc}
+cities = data.frame(stringsAsFactors=FALSE,
+         city = c("Houston", "Miami", "Atlanta", "Chicago", "Los Angeles",
+                  "Washington, D.C.", "New York"),
+          loc = c("29.81997438, -95.33997929", "25.7876107, -80.22410608",
+                  "33.83001385, -84.39994938", "41.82999066, -87.75005497",
+                  "33.98997825, -118.1799805", "38.89954938, -77.00941858", 
+                  "40.74997906, -73.98001693"),
+          pop = c(4053287, 2983947, 2464454, 5915976, 8097410, 2445216.5,
+                  13524139),
+         iso3 = c("USA", "USA", "USA", "USA", "USA", "USA", "USA"),
+     province = c("Texas", "Florida", "Georgia", "Illinois", "California",
+                  "District of Columbia", "New York")
+)
+
+cities_split = cities %>% 
+  separate(loc, c("lat", "lng"), sep=",")
+
+cities_split
+```
+
+## Example: Uniting Values - Location Data
+
+```{r combine_locs, dependson = "breakdown_loc"}
+cities_split %>% unite(loc, c("lat", "lng"), sep = ",")
+```
+
+
+### Exercise: Tidying WHO data
+
+```{r who-messy, eval = FALSE}
+who = tidyr::who
+
+View(who)
+head(who)
+library("ggplot2")
+library("stringr")
+
+colnames(who)
+
+# Convert from a combined value to a split value.
+colnames(who) = str_replace_all(colnames(who), pattern = "newrel", replacement = "new_rel")
+
+# Check to see that files are all in alignment e.g. new_sp_mXXXX
+colnames(who)
+
+# Matching codes
+# newrel => new_rel
+
+tidied_who = who %>% 
+  gather(key = "____",    # Key is where we should fold values under 
+         value = "____",  # Value is where the observation is
+         ____:____,       # Specifying the range of column names to transform
+         na.rm = TRUE) %>% # We remove any case that has a missing value
+  separate(key, c("____", "____", "____")) %>% # Split apart variables
+  separate(sexage, c("____", "____"), sep = 1) # Break apart more variables
+```
+
+
+

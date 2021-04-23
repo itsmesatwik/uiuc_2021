@@ -1,0 +1,353 @@
+---
+title: "Transforming Data"
+author: "JJB + Course"
+date: "9/07/2018"
+output:
+   html_document:
+     toc: true
+     toc_float: true
+---
+
+
+# Functions
+
+## Example: Add
+
+```{r}
+add = function(x, y) {
+  return(x + y)
+}
+
+add(1, 3)
+```
+
+## Example: Hello World!
+
+```{r}
+message("Hello World!")
+
+say_hello_world = function() { 
+  message("Hello World!")
+}
+
+say_hello_world()
+```
+
+
+## Example: Generic Code to Specific Routine
+
+Generic _R_ script values
+
+```{r}
+set.seed(1115)
+
+sample(6, size = 1)
+
+sample(6, size = 1)
+
+sample(6, size = 1)
+```
+
+Adding a name to the routine...
+
+```{r}
+roll_die = function(num_sides) {
+    roll = sample(num_sides, size = 1)
+    return(roll)
+}
+
+set.seed(1115)
+roll_die(6)
+```
+
+What happens if we forget to specify a `num_sides` value? E.g. what is `roll_die()`?
+
+Making the function receive default settings...
+
+```{r}
+roll_die_default = function(num_sides = 6) {
+    roll = sample(num_sides, size = 1)
+    return(roll)
+}
+
+set.seed(1115)
+roll_die_default()
+
+set.seed(1115)
+roll_die_default(6)
+```
+
+Generalizing to _n_ rolls:
+
+```{r}
+roll_n_die = function(num_rolls, num_sides = 6) {
+    rolls = sample(num_sides, size = num_rolls,
+                   replace = TRUE)
+    return(rolls)
+}
+
+set.seed(1115)
+roll_n_die(3, 6)
+```
+
+## Exercise: Transforming a Workflow
+
+Clean up the following code by implementing a function that:
+
+1. Generates data from a normal distribution
+2. Applies the mean normalization 
+
+```{r}
+set.seed(325)
+
+x = rnorm(10)
+y = rnorm(10)
+
+x_nmu = (x - mean(x)) / (max(x) - min(x))
+x_nmu
+y_nmu = (y - mean(y)) / (max(y) - min(y))
+y_nmu
+```
+
+# Classes and Objects
+
+## Example: Vector Types
+
+```{r view-vectors}
+# Vector of numeric elements
+w = c(9.5, -3.14, 88.9999, 12.0)
+     # ^     ^      ^        ^  decimals
+
+# Vector of integer elements
+x = c(1L, 2L, 3L, 4L)
+
+# Vector of logical elements
+y = c(TRUE, FALSE, FALSE, TRUE)
+
+# Vector of character elements
+z = c("a", "b", "c", "d")
+```
+
+## Example: Creating a Data Frame by Hand
+
+```{r viewing-heights}
+subject_heights = data.frame(
+  id     = c(1, 2, 3, 55),
+  sex    = c("M", "F", "F", "M"),
+  height = c(6.1, 5.5, 5.2, 5.9)
+)
+```
+
+## Example: Determine Class and Structure
+
+
+```{r looking-into-data}
+class(subject_heights)
+str(subject_heights)
+```
+
+# Vectors 
+
+## Example: Vectorization and Elements
+
+```{r vectorized-addition}
+x = c(1, 2, 3, 4)
+y = c(5, 6, 7, 8)
+z = x + y
+z
+```
+
+## Example: Vectorized Binary Operators
+
+```{r example-of-ops}
+x = c(1, 2, 3, 4)
+y = c(5, 6, 7, 8)
+x + y             # Addition
+x - y             # Subtraction
+x * y             # Multiplication       
+x / y             # Division
+x ^ y             # Exponentiation
+x %/% y           # Integer Division
+x %% y            # Modulus
+```
+
+
+### Aside: Modulus
+
+```{r mod-ex}
+12 %% 7                 # a = n*q + r => 12 = 1*7 + 5
+
+outer(9:1, 2:9, `%%`)   # Compute the cross between X & Y
+```
+
+
+## Example: Recycling
+
+```{r recycle-process}
+a = c(1, 2, 3, 4)
+length(a)
+
+b = c(5, 6, 7)
+length(b)
+
+a + b
+```
+
+## Example: Recycling - Round 2
+
+```{r expansion-shorter}
+c(1, 2, 3, 4) + c(-1, 1) 
+```
+
+## Exercise: Determining Scalars
+
+Explain what happens if we have a vector and add a single value
+
+```{r whats-a-scalar}
+a = 2 
+x = c(1, 2, 3, 4) 
+x + a
+```
+
+
+```{r calculate-1p-conf}
+p_hat = 0.85
+
+z_value = 1.96
+n = 92
+
+p_hat + z_value * sqrt(p_hat*(1-p_hat) / n)
+
+p_hat - z_value * sqrt(p_hat*(1-p_hat) / n)
+
+p_hat + z_value * c(-1, 1) * sqrt(p_hat*(1-p_hat) / n)
+
+```
+
+```{r}
+a = 2
+
+b = c(1, -49)
+
+a
+
+b
+
+d = 1:50
+
+d
+
+ ```
+
+
+
+
+## Example: Everything is a Vector
+
+```{r etia}
+a = 2
+length(a)
+
+a_vec = c(2)
+length(a_vec)
+```
+
+```{r eq-check}
+identical(a, a_vec)
+```
+
+
+# Subsets
+
+## Example: Positional Indexes
+
+```{r ex-vector}
+ex_vec = c(5, 3, -2, 42)
+```
+
+
+## Example: Retrieving a Single Value
+
+```{r retrieve-first}
+ex_vec = c(5, 3, -2, 42)
+
+# Retrieve first element
+ex_vec[1]
+
+# Retrieve second element
+ex_vec[4]
+
+# Retrieve the nth element
+last_pos = length(ex_vec)
+ex_vec[last_pos]
+```
+
+## Example: Retrieve Multiple Values
+
+```{r retrieve-seq}
+ex_vec = c(5, 3, -2, 42)
+
+ex_vec[c(2, 3)]
+
+ex_vec[2:3]
+```
+
+## Example: Retrieve Multiple Values by Removing Indices
+
+```{r neg-seq}
+ex_vec = c(5, 3, -2, 42)
+
+ex_vec[-c(1, 4)]
+```
+
+## Exercise: Positional Index Methods
+
+Using all sequence methods, create sequences for the following vectors. Are all approaches the same?
+
+```{r}
+int_vec = c(8L, -2L, 5L, 0L)
+empty_vec = numeric(0)
+```
+
+```{r}
+int_vec
+
+class(int_vec)
+```
+
+```{r}
+empty_vec
+```
+
+
+```{r}
+# sequence generation for integer
+
+seq(1, length(int_vec))
+
+seq_len(length(int_vec))
+
+seq_along(int_vec)
+```
+
+```{r}
+1:length(empty_vec)
+
+length(empty_vec)
+
+1:0
+
+c(1, 0)
+```
+
+```{r}
+seq_along(empty_vec)
+
+```
+
+
+
+
+
+
+

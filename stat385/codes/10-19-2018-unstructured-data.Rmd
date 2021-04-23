@@ -1,0 +1,409 @@
+---
+title: "Unstructured Data"
+author: "JJB + Course"
+date: "10/19/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Unstructured Data
+
+## Example: Characters
+
+```{r}
+'a' 
+'b'
+'c'
+'D'
+'E'
+'F'
+
+'1'
+'2'
+'3'
+'4'
+
+' '
+'*'
+','
+' " '
+```
+
+## Example: Strings
+
+```{r}
+'UIUC'
+'STAT'
+'Chambana'
+'Chicago'
+'Illinois'
+```
+
+## Example: Character vs. String Type
+
+```{r}
+class("J")
+class("James")
+```
+
+## Example: Escape Characters
+
+```{r}
+double_quote = "Hello World!"
+
+single_quote = 'Hello World!'
+
+complex_string = "It's happening!"
+
+escape_string = 'It\'s happening!'
+
+white_space = " "
+
+empty_string = ""
+```
+
+
+```{r}
+escape_string = 'It\'s happening!'
+```
+
+
+## Example: Escape characters in action!
+
+```{r}
+message("Hello World My name is Ted.")
+```
+
+```{r}
+message("Hello World\nMy name is Ted.")
+```
+
+```{r}
+message("Here is a quote: \"The World is watching!\"")
+message('Here is a quote: \'The World is watching!\'')
+```
+
+
+## Exercise: Writing a string
+
+> Actually, I see it as part of my job to inflict R on people who are perfectly happy to have never heard of it. Happiness doesn't equal proficient and efficient. In some cases the proficiency of a person serves a greater good than their momentary happiness.
+>
+> -- Patrick Burns, R-help (2005)
+
+```{r}
+
+# Using single quotes to denote a statement
+# requires all apostrophe to be escaped using a 
+# backslash.
+
+quote_single = 'Actually, I see it as part of my job to inflict R on people who are perfectly happy to have never heard of it. Happiness doesn\'t equal proficient and efficient. In some cases the proficiency of a person serves a greater good than their momentary happiness.'
+
+quote_double = "Actually, I see it as part of my job to inflict R on people who are perfectly happy to have never heard of it. Happiness doesn't equal proficient and efficient. In some cases the proficiency of a person serves a greater good than their momentary happiness."
+
+# Notice backslash doesn't appear in out. 
+```
+
+
+```{r}
+# message with double quotations
+message(quote_single)
+```
+
+```{r}
+# Notice backslash doesn't appear in out. 
+message(quote_double)
+```
+
+
+# String Ops
+
+
+## Example: Length and Characters
+
+```{r}
+length("toad")
+nchar("toad")
+
+ex_string = c("toad", "eoh", "r")
+length(ex_string)
+nchar(ex_string)
+```
+
+## Example: Modifying Case
+
+```{r}
+
+# Same string, different capitalization
+# Not equivalent.
+"sTaT 385 at UiUc" == "stat 385 at uiuc"
+
+# Same string, same capitalization
+# viewed as equivalent
+"sTaT 385 at UiUc" == "sTaT 385 at UiUc"
+
+# Move to lowercase
+tolower("sTaT 385 at UiUc")
+
+# Capitalize each letter
+toupper("sTaT 385 at UiUc")
+```
+
+
+## Example: Concatenating Strings
+
+```{r concatentation}
+your_name = "James"
+
+paste("Hello World to you", your_name, "!")
+
+paste0("Hello World to you", your_name, "!")
+
+paste("Hello World to you", your_name, "!", sep = "")
+
+paste("STAT 385", "UIUC", "IL", sep = " @ ")
+
+x = 1:10
+y = 2:11
+
+paste(x, ",", y, collapse = " - ")
+```
+
+## Exercise: Making a remainder statement
+
+```{r}
+x = seq_len(5)
+# x
+
+# Modulus
+mod = 2
+
+remainder = x %% mod
+
+# `paste0` is useful if you want to control how the string is
+# merged together w.r.t spacing and punctation at the end.
+paste0("Dividing ", x, " by ", mod, " gives a remainder of ", remainder , ".")
+
+```
+
+```{r}
+paste0("Dividing", x, "by", mod, "gives a remainder of ", remainder , ".")
+```
+
+```{r}
+# Paste is great if you do not need to add ending punctuation
+# as it will automatically add spaces between strings and variables.
+paste("Dividing", x, "by", mod, "gives a remainder of", remainder , ".")
+```
+
+
+## Exercise: Counting words in text
+
+<https://factba.se/transcript/donald-trump-remarks-steel-aluminum-tariffs-march-8-2018>
+
+```{r}
+my_text = "Well thank you very much, everybody. I am honored to be here with our incredible steel and aluminum workers. And you are truly the backbone of America. You know that. Very special people. I've known you and people that are very closely related to you for a long time. You know that. I think it's probably the reason I'm here. So I want to thank you."
+
+my_text
+
+length(my_text)
+
+nchar(my_text)
+```
+
+```{r}
+my_text
+```
+
+```{r}
+# Remove spaces from unstructured string
+gsub("[[:space:]]", "", my_text)
+```
+
+
+```{r}
+# very elementary way of getting number of words.
+nchar(my_text) - nchar(gsub("[[:space:]]", "", my_text))
+```
+
+
+## Example: Cases
+
+```{r}
+x = "caps is the highway to coolsville 8)"
+
+toupper(x)
+
+repeat{
+  
+  x = readline("Do wish to stop the loop?")
+  
+  if(x == "yes") {
+    break
+  }
+}
+
+
+
+repeat{
+  
+  x = readline("Do wish to stop the loop?")
+  
+  if(tolower(x) == "yes") {
+    break
+  }
+}
+
+```
+
+
+## Example: Concatenating Strings (Vectorized)
+
+```{r}
+subject_ids = seq_len(5)
+
+paste0("S", subject_ids)
+
+paste0("S", subject_ids, sep = "-")
+
+paste0("S", subject_ids, collapse = "")
+```
+
+## Example: Substring
+
+```{r}
+substr("stat", 1, 2)
+
+substr("Illinois", 4, 8)
+
+substr("coding", 7, 10)
+
+substr(c("stat", "Illinois"), 1:2, 3:4)
+```
+
+
+
+### Exercise: Transform the first letter in every string to a capital
+
+```{r}
+x = c("mumford", "female", "male", "joe", "pete")
+
+
+# Show updated elements
+x
+```
+
+```{r}
+# Retrieving first element in vector
+x[1]
+
+# Retrieving the first character of the element (string)
+substr(x[1], 1, 1)
+
+toupper(substr(x[1], 1, 1))
+
+# We combined the above steps together
+# We saved back into the index for x at position 1 of the character string
+substr(x[1], 1, 1) = toupper(substr(x[1], 1, 1))
+
+x[1]
+```
+
+
+```{r}
+substr(x, 1, 1) = toupper(substr(x, 1, 1))
+x
+```
+
+
+
+
+
+## Example: Split String
+
+```{r}
+dishes = c("Spaghetti and Meatballs", "French Onion Soup")
+
+my_dishes = strsplit(dishes, split = " ")
+```
+
+```{r}
+my_dishes
+my_dishes[[2]][3]
+
+my_dishes[[2]][4]
+
+my_dishes[[7]][1]
+```
+
+
+```{r}
+
+movies = "Star Wars, Up!, Monsters Inc., Black Panther"
+movies
+```
+
+```{r}
+# This cleans up.
+my_movies = strsplit(movies, split = ", ")
+my_movies
+```
+
+```{r}
+# One brackets keeps the list
+my_movies[1]
+```
+
+```{r}
+# Two brackets removes the list
+my_movies[[1]]
+```
+
+
+```{r}
+# Two brackets removes the list
+my_movies[[1]][2]
+```
+
+
+
+```{r}
+# Note this leaves a space at the end of each character
+strsplit(movies, split = ",")
+```
+
+```{r}
+dishes_extended = c("Spaghetti and Meatballs", "French Onion Soup", "Cabbage Soup", "Corn Beef and Cabbage", "Pizza", "Fried Rice", "chicken noodle soup")
+
+
+
+# Flatten the list
+my_dishes_ext = strsplit(dishes_extended, split = " ")
+
+vec_dishes_ext = unlist(my_dishes_ext)
+
+# differences exists in frequencies related to UPPER or lower case
+
+table(vec_dishes_ext)
+
+table(tolower(vec_dishes_ext))
+
+```
+
+
+
+
+
+
+
+
+
+
+

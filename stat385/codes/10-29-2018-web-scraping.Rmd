@@ -1,0 +1,310 @@
+---
+title: "Web Scraping"
+author: "JJB + Course"
+date: "10/29/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# HTML
+
+### Exercise: Understanding HTML
+
+1. Identify all tags and what can be extracted
+2. Determine what tags have attributes and what their properties are
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title of Page</title>
+</head>
+<body>
+<h1 align = "center"> First order heading (large) </h1>
+<p> Paragraph for text with a
+   <a href="http://www.stat.illinois.edu">link!</a>
+   <h2> Top Beverages </h2>
+   <ol> 
+      <li> Tea </li>
+      <li> Coffee </li>
+      <li> Milkshakes </li>
+   </ol>
+</p>
+<!-- Comment -->
+</body>
+</html>
+```
+
+
+# Pipe Operator
+
+
+## Example: Piping Operator
+
+```{r}
+# install.packages("magrittr")
+library("magrittr")
+4 %>%           # Take the number four and, then
+    sqrt()      # find the square root
+
+# Same as
+# sqrt(4)
+
+c(7, 42,  1,  25) %>%   # Combine four elements and, then
+    log() %>%           # take the natural log and, then
+    round(2) %>%        # round to the second decimal and, then
+    diff()              # take the difference between consecutive elements 
+
+# Same as
+# diff(round(log(c(7,42,1,25)), 2))
+```
+
+# Scraping Information
+
+Prior to continuing, note that you will need:
+
+```{r}
+# install.packages("rvest")
+library("rvest")
+```
+
+## Example: Reading in a Web Page to R
+
+```{r}
+sample_webpage = '<!DOCTYPE html>
+<html>
+<head>
+<title>Title of Page</title>
+</head>
+<body>
+<h1 align = "center"> First order heading (large) </h1>
+<p> Paragraph for text with a
+   <a href = "http://www.stat.illinois.edu">link!</a>
+   <h2> Top Beverages </h2>
+   <ol> 
+      <li> Tea </li>
+      <li> Coffee </li>
+      <li> Milkshakes </li>
+   </ol>
+</p>
+<table border =  “1”>
+  <tr>
+    <th> Name </th>
+    <th> Salary </th> 
+  </tr>
+  <tr>
+    <td> Joshua Tree </td> 
+    <td> 66,666 </td>
+  </tr>
+  <tr>
+    <td> Aaron Thomas </td> 
+    <td> 78,921.40 </td>
+  </tr>
+</table>
+<!-- Comment -->
+</body>
+</html>'
+
+my_webpage = read_html(sample_webpage)
+
+# Or, grab it from online! 
+# my_webpage = read_html("http://domain.com/path/to/sample_webpage.html")
+
+# Or, use a local copy.
+# my_webpage = read_html("~/Documents/path/to/sample_webpage.html")
+
+my_webpage
+```
+
+## Example: Extract Node or Nodes
+
+Process the webpage into _R_.
+
+```{r}
+my_webpage = read_html(sample_html)
+```
+
+Retrieve **all** instances of the `li` element.
+
+```{r}
+my_webpage %>% 
+    html_nodes("li")
+```
+
+Retrieve only the first instance of the `li` element.
+
+```{r}
+my_webpage %>% 
+    html_node("li")
+```
+
+Extract Text from Elements
+
+```{r}
+my_webpage %>% 
+    html_nodes("li") %>%
+    html_text()
+```
+
+## Example: Retrieve Attributes
+
+Retrieve only the `httr` attribute information.
+
+```{r}
+my_webpage %>% 
+    html_nodes("a") %>%
+    html_attr("href")
+```
+
+Retrieve **all** attributes.
+
+```{r}
+my_webpage %>% 
+    html_nodes("a") %>%
+    html_attrs()
+```
+
+## Example: IL State Profile
+
+```{r}
+# Read in the Web Page to R
+# without saving into the server.
+il_profile = read_html("https://illinoiselectiondata.com/elections/ILprofile.php")
+
+il_profile %>% 
+  html_nodes(".myTable-blue") %>%
+  html_table()
+
+# Select the elements that are tables.
+# Extract the contents as a data.frame.
+il_tables = il_profile %>% 
+  html_nodes(".myTable-blue") %>%
+  html_table()
+
+str(il_tables)
+
+il_tables[[2]]
+```
+
+
+## Example: PBS News Hour
+
+```{r}
+pbs_url = "https://www.pbs.org/newshour/"
+
+## Note the selector we found is:
+# .card-sm__title span , .playlist__title, .card-md__title span, .home-hero__title a
+
+pbs_webpage = read_html(pbs_url)
+
+pbs_webpage %>%
+  html_nodes(".card-sm__title span , .playlist__title, .card-md__title span, .home-hero__title a") %>%
+  html_text()
+```
+
+## Example: Google News
+
+```{r}
+gnews = read_html("https://news.google.com")
+
+gnews
+
+gnews %>% 
+  html_nodes(".kWyHVd .ME7ew") %>%
+  html_text()
+```
+
+
+### Exercise: Thomas Crown Affair
+
+Find the top listed stars of [The Thomas Crown Affair](www.imdb.com/title/tt0155267/)
+
+```{r, eval = FALSE}
+library("rvest")
+
+# 1. Load in the HTML page into R
+imdb_page = # read_html("http://www.imdb.com/title/tt2294629")
+  
+# Thomas Crown Affair
+# read_html("http://www.imdb.com/title/tt0155267/")
+
+# Frozen movie
+# read_html("http://www.imdb.com/title/tt2294629")
+
+# 2. Determine the selectorgadget values
+
+# ... 
+
+# 3. Extract the contents 
+
+# ... 
+```
+
+### Exercise: Extract Financial Disclosures
+
+Extract the financial information from the Open Secrets campaign initiative.
+
+<https://www.opensecrets.org/races/election?id=IL>
+
+Hint: You will need to use `html_table(x)`
+
+
+```{r}
+
+
+# Selector
+
+## td , .number, .no-sort
+
+library(rvest)
+
+opensecrets = read_html("https://www.opensecrets.org/races/election?id=IL")
+
+opensecrets
+
+opensecrets %>%
+  html_nodes("table")%>%
+  html_table(fill = TRUE)
+```
+
+
+# Advanced Web Scraping
+
+## Example: Generalizing Output
+
+Grabbed HTML Output
+
+```html
+<td class="itemprop" itemprop="actor" itemscope="" itemtype="http://schema.org/Person">
+<a href="/name/nm0068338/?ref_=tt_cl_t1" itemprop="url"> <span class="itemprop" itemprop="name">Kristen Bell</span>
+</a>          </td>
+```
+
+```html
+<td class="itemprop" itemprop="actor" itemscope="" itemtype="http://schema.org/Person">
+<a href="/name/nm0876138/?ref_=tt_cl_t6" itemprop="url"> <span class="itemprop" itemprop="name">Alan Tudyk</span>
+</a>          </td>
+```
+
+
+To generalize, we're aiming to find some attribute on the HTML tag that appears
+multiple times. If we can find such an attribute, then we can construct
+a CSS selector of `tag[attribute=value]`.
+
+```{r}
+# Read in the Movie
+imdb_movie = read_html("https://www.imdb.com/title/tt0155267/")
+
+# Create a CSS selector based on two or more HTML attributes.
+imdb_movie %>% 
+  html_nodes("td[itemprop=\"actor\"] span[itemprop=\"name\"]") %>% 
+  html_text()
+```

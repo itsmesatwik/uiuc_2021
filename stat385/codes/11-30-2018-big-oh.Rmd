@@ -1,0 +1,155 @@
+---
+title: "Algorithmic Complexity"
+author: "JJB + Course"
+date: "11/30/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# Empirical Run Time
+
+## Example: Elementary Benchmark
+
+```{r}
+out = system.time({Sys.sleep(1)})
+out
+
+out[3]
+```
+
+What does this say about elapsed vs. relative + system?
+
+## Example: Benchmarking Data Structures
+
+```{r, cache = TRUE}
+# Set seed for reproducibility
+set.seed(1337)
+
+# Construct large matrix object
+matrix.op = matrix(rnorm(10000*100), 10000, 100)
+
+# Convert matrix object to data.frame
+dataframe.op = as.data.frame(matrix.op)
+
+library("rbenchmark")
+bench_ops = benchmark(mat.op = apply(matrix.op, 2, sd), 
+                      df.op  = apply(dataframe.op, 2, sd))
+bench_ops
+```
+
+
+## Example: Benchmarking } vs. (
+
+```{r, cache = TRUE}
+# install.packages("Rcpp")
+
+# Different R implementations
+f = function(n, x = 1) for (i in 1:n) x = 1/(1+x)
+g = function(n, x = 1) for (i in 1:n) x = (1/(1+x))
+h = function(n, x = 1) for (i in 1:n) x = (1+x)^(-1)
+j = function(n, x = 1) for (i in 1:n) x = {1/{1+x} }
+k = function(n, x = 1) for (i in 1:n) x = 1/{1+x}
+Rcpp::cppFunction(code = 'int d(int n, double x = 1.0) {
+                      for (int i = 0; i < n; ++i) x = 1/(1+x);
+                      return x;
+                  }')
+
+library("rbenchmark")
+N = 1e6                                        # Number of Times to Run Loop
+bench_curly =                                  # Test Approaches
+    benchmark(f(N, 1), g(N, 1), h(N, 1), j(N, 1), k(N, 1), d(N, 1),
+                          order = "relative",  # Fastest first (lower is better)
+                          replications = 20)   # Run each function x times
+bench_curly
+```
+
+## Example: Benchmark of the Preallocation of space
+
+```{r, cache = TRUE}
+append_elements = function(n) { 
+  vec = numeric(0)                     # Vector of length 0
+  for(i in seq_len(n)) vec = c(vec, i) # Append results
+  vec
+}
+preallocate_elements = function(n) {
+  vec = rep(NA, n)                    # Vector of length n
+  for(i in seq_len(n)) vec[i] = i     # Access and update
+  vec
+}
+vectorized_element = function(n) { seq_len(n) }
+
+n = 10000
+bench_growth = benchmark(append      = append_elements(n),
+                         preallocate = preallocate_elements(n),
+                         vectorized  = vectorized_element(n))
+bench_growth
+```
+
+## Example: Microbenchmarking Code
+
+```{r growth_micro, cache = TRUE}
+# install.packages("microbenchmark")
+library("microbenchmark")
+n = 10000
+microbench_growth = 
+  microbenchmark(
+    append       = append_elements(n),
+    preallocate  = preallocate_elements(n),
+    vectorized   = vectorized_element(n)
+    )
+
+microbench_growth
+```
+
+```{r cache = TRUE, dependson="growth_micro"}
+library("ggplot2")
+autoplot(microbench_growth)
+```
+
+
+# Theoretical Run Time
+
+## Example: Big Oh Runtimes
+
+```{r, echo = FALSE, message = FALSE}
+# install.packages(c("ggplot2", "reshape2"))
+library("ggplot2");library("reshape2")
+N = 1:50    # Calculate some different N sample sizes
+obs = length(N) # Determine length
+
+# Create a wide data set
+d = data.frame(Constant = rep(1,obs),
+               SquareRoot = sqrt(N),
+               Logarithmic = log(N),
+               Quadlogarithmic = log(N)^2,
+               LogLinear = N*log(N),
+               Quadratic = N^2,
+               Exponential = 2^N,
+               Factorial = factorial(N),
+               Size = N)
+
+# Wide to Long
+d2 = melt(d, id.vars = "Size", variable.name = "Method", value.name = "RunTime")
+d2 = d2[is.finite(d2$RunTime) & d2$RunTime < 1e4,]
+ggplot(d2) +
+  geom_line(aes(x = Size, y = RunTime, color = Method)) +
+  ggtitle("Run Time vs. Sample Size") + xlab("Sample Size") + ylab("Run Time") +
+  theme(plot.title = element_text(size=17),
+        legend.title=element_text(size=17),
+        axis.text = element_text(size=15), # Axis labels
+        axis.title = element_text(size=17), # Axis names 
+        legend.text = element_text(size=15)) +
+  ylim(0, 150)
+```
+
+
+
+```{r}
+n = 1:1000
+data.frame(n = n ,
+           nlogn = n*log(n))
+```
+

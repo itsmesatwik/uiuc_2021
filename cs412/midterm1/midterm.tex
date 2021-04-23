@@ -1,0 +1,168 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+\usepackage{amsmath,amssymb,theorem,float,algorithmic,algorithm,bbm,bm}
+\usepackage{graphicx,enumerate,color,hyperref}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{3mm}
+
+\begin{document}
+	\begin{center}
+		{\bf {\huge CS 412: Spring'21}}\\
+		\vspace*{2mm}
+		{\bf {\huge Introduction To Data Mining}}\\
+		\vspace*{5mm}
+		{\bf {\huge Take-Home Midterm}\\ \vspace*{2mm} {\large (Due Tuesday, March 23, 10:00 am)}}
+	\end{center}
+	%\vspace*{5mm}
+	\par \noindent
+
+{\bf General Instructions}
+\begin{itemize}
+\item You will have to answer the questions yourself, you cannot consult with other students in class. It is an open book exam, so you can use the textbook and the material shared in class, e.g., slides, lectures, etc. 
+
+\item The take-home midterm will be due at 10 am, Tue, March 23. We will be using Compass for collecting the homework assignments. Please submit your answers via Compass (\url{http://compass2g.illinois.edu}). Contact the TAs if you are having technical difficulties in submitting the assignment. We will NOT accept late submissions.
+
+\item Your answers should be typeset and submitted as a pdf. You cannot submit a hand-written and scanned version of your midterm.
+
+\item You DO NOT have to submit code for any of the questions.
+
+\item For the questions, you will not get full credit if you only give out a final result. Please show the necessary details, calculation steps, and explanations as appropriate.
+
+\item If you have clarification questions, you can use slack or campaswire. However, since the midterm needs to be submitted within 24 hours, please try to do your best in answering the questions based on your own understanding, in case responses are delayed. 
+
+\end{itemize}
+
+
+
+\newpage
+
+\begin{enumerate}
+
+\item (18 points) This question considers summarization and visualization of probability distributions:
+
+\begin{enumerate}
+\item (3 points) Describe what a five-number summary of a distribution is. 
+
+\item (3 points) Describe what boxplots are and explain how boxplots incorporate the five-number summary.
+
+\item (3 point) Can two different distributions have the exact same boxplot? Clearly explain your answer. 
+
+\item (3 points) Describe what quantile plots are.
+
+\item (3 points) Describe what quantile-quantile plots are. 
+
+\item (3 point) How is a quantile-quantile plot different from a quantile plot? Clearly explain.
+\end{enumerate}
+
+\item (22 points) Table~\ref{tab:beerdiaper} is a summary of customers’ purchase history of diapers and beer. In particular, for a total of 1000 customers, the table shows how many bought both Beer and Diapers, how many bought Beer but not Diapers, and so on. For the problem, we will treat both 'Buy Beer' and 'Buy Diaper' as binary attributes.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c||c|c|} \hline
+             & Buy Diaper & Not Buy Diaper \\ \hline \hline 
+    Buy Beer  &  100 & 400 \\ 
+    Not Buy Beer & 300 & 200 \\ \hline 
+    \end{tabular}
+    \caption{Contingency table for Beer and Diaper sales.}
+    \label{tab:beerdiaper}
+\end{table}
+\begin{enumerate}
+\item (3 points) Under the null hypothesis, i.e., `Buy Beer' and `Buy Diaper' are independent, 
+what is the expected number for `Buy Beer' and `Buy Diaper'?
+
+\item (3 points) Under the null hypothesis, i.e., `Buy Beer' and `Buy Diaper' are independent, 
+what is the expected number for `Buy Beer' and `Not But Diaper'?
+
+\item (4 points) What is the $\chi^2$ statistic for the contingency table? Show steps of your calculation. 
+
+\item (4 points) At a significance level of $\alpha=0.05$, are these two variables `Buy Beer' and `Buy Diaper' independent? Explain your answer. 
+
+\item (4 points) Consider an updated contingency table where the entry for `Not Buy Beer' and `Not Buy Diaper' is 20,000 instead of 200, and all other entries are the same. What is the $\chi^2$ statistic for this updated contingency table? Show steps of your calculation. 
+
+\item (4 points) For the updated contingency table, at a significance level of $\alpha=0.05$, are these two variables `Buy Beer' and `Buy Diaper' independent? Explain your answer. 
+
+\end{enumerate}
+
+\item (24 points) This question considers frequent pattern mining and association rule mining.
+
+\begin{enumerate}
+\item (12 points) A transaction database (Table~\ref{tab:tdb1}) has 5 transactions, and we will consider frequent pattern  and association mining with (relative) minimum support $min\_sup = 0.6$ and (relative) minimum confidence $min\_conf = 0.6$.
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|c||c|} \hline
+Customer  & Items Bought \\ \hline \hline
+C_1  & \{H, A, D, B, C\} \\
+C_2  & \{D, A, E, F\} \\ 
+C_3  & \{C, D, B, E\} \\
+C_4 & \{B, A, C, H, D\} \\
+C_5 & \{A,G,C\} \\ \hline
+\end{tabular}
+\end{center}
+\caption{A transaction database.}
+\label{tab:tdb1}
+\end{table}
+\begin{enumerate}
+    \item (6 points) What is the frequent $k$-itemset for the largest $k$? Explain your answer. If there are more than one, it is sufficient to mention (and explain) only one. 
+    \item (6 points) List all the strong association rules (with support and confidence) for the following type of rules:\\
+    $\forall x \in transaction,~~ buys(x,item_1) \wedge buys (x,item_2) \Rightarrow buys(x,item_3)~. \qquad [s,c]$
+\end{enumerate}
+
+\item (12 points) A manager at a grocery store is interested in only the frequent patterns (i.e., itemsets)
+that satisfy certain constraints. For the following cases, state the {\em type of constraint}\footnote{The type of constraints will be from
+our discussion on constraint-based pattern mining in class, e.g., Section 6.3 in the text book, and related in-class discussions.}
+for {\em every constraint} in each case and discuss how to mine such patterns most efficiently.
+\begin{enumerate}[(i)]
+\item (6 points) The average price of all the items in each pattern is greater than $\$50$.
+\item (6 points) The sum of the price of all the items with profit over $\$5$ in each pattern is at least $\$200$.
+\end{enumerate}
+\end{enumerate}
+
+
+\item (36 points) A sequence database (Table~\ref{tab:sdb1}) has 4 transactions, and we will consider frequent sequential pattern mining with (absolute) minimum support of 3.
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|c||c|} \hline
+Sequence\_ID & Sequence \\ \hline \hline
+S_1 & $\langle a(abc)(ac)d(cf) \rangle$ \\
+S_2 & $\langle (ad)c(bc)(ae) \rangle$ \\ 
+S_3 & $\langle (ef)(ab)(df)cb\rangle$ \\
+S_4 & $\langle eg(af)cbc \rangle$   \\ \hline
+\end{tabular}
+\end{center}
+\caption{A sequence database.}
+\label{tab:sdb1}
+\end{table}
+List all the frequent subsequences starting with the following prefixes and show details of your calculations:
+\begin{enumerate}
+\item (12 points) Frequent subsequences starting with {\tt a}.
+\item (6 points) Frequent subsequences starting with {\tt c}.
+\item (6 points) Frequent subsequences starting with {\tt d}.
+\item (3 points) Frequent subsequences starting with {\tt b}.
+\item (3 points) Frequent subsequences starting with {\tt e}.
+\item (3 points) Frequent subsequences starting with {\tt f}.
+\item (3 points) Are there other frequent subsequences in the database not covered by the above? If your answer is `yes', list one such frequent subsequence. If your answer is `no', clearly explain why not.
+\end{enumerate}
+
+
+% \vspace*{3mm}\\ 
+% {\tt
+% 4, <a>\\
+% 4, <ab>\\
+% 4, <ac>\\
+% 4, <b>\\
+% 4, <c>\\
+% 3, <acb>\\
+% 3, <acc>\\
+% 3, <cc> \\
+% 3, <d>\\
+% 3, <dc>\\
+% 3, <e>\\
+% 3, <f>\\
+% }
+
+\end{enumerate}
+
+
+
+\end{document}

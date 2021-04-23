@@ -1,0 +1,4 @@
+s1, <abcde>
+s2, <bbbde>
+s3, <cbcca>
+s4, <bbbcc>

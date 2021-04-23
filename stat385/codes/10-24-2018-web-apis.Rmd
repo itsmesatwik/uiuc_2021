@@ -1,0 +1,302 @@
+---
+title: "Web APIs"
+author: "JJB + Course"
+date: "10/24/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+# HTTP Requests
+
+## Example: Downloading a File
+
+```{r}
+# install.packages("readxl")
+
+# URL of file to retrieve
+url = "http://www.dmi.illinois.edu/stuenr/class/enrfa18.xls" 
+
+# http://www.dmi.illinois.edu/stuenr/class/enrfa17.xls
+
+# http://www.dmi.illinois.edu/stuenr/class/enrfa16.xls
+
+# Save this file as ...
+destfile = "enrfa18.xls"
+
+# Download the file
+download.file(url = url, destfile = destfile)
+
+# Read the file into R
+enrollfa18 = readxl::read_excel(destfile, skip = 4)
+
+# Adding skip = 4 to read statement allows for the
+# proper headers to be set for the data as it skips
+# the initial four rows that contain no information.
+head(enrollfa17)
+```
+
+# httr with REST
+
+## Example: Retrieving a website
+
+```{r}
+# install.packages("httr")
+library("httr")
+
+# Form a GET request to obtain the STAT department website
+web_page = GET("https://stat.illinois.edu/")
+
+# Check HTTP status code
+status_code(web_page)
+
+# Retrieve body of request
+content(web_page, "text")
+```
+
+## Example: URL Encoding
+
+Encoding a URL
+
+```{r}
+URLencode("https://www.google.com/search?q=URL decoded")
+```
+
+Decoding the URL
+
+```{r}
+URLdecode("https://www.google.com/search?q=URL%20encoded")
+```
+
+Encoding Special Characters
+
+```{r}
+URLencode("+ * - \ ^ # $ % &")
+```
+
+Decode Special Characters
+
+```{r}
+URLdecode(URLencode("+ * - \ ^ # $ % &"))
+```
+
+## Example: Querying Google
+
+```{r}
+# Provide a query term
+query_terms = list(q = "uiuc stat department")
+
+# Form a GET request to search google
+google_search = GET("https://www.google.com/search",
+                    query = query_terms)
+
+google_search
+
+
+headers(google_search)
+
+# Retrieve body of request
+content(google_search, "text")
+
+# Default is an xml document
+content(google_search)
+```
+
+## Exercise: GET request
+
+Send a GET request to <https://httpbin.org/get>
+
+Check:
+
+- Status
+- Header
+- Body
+
+```{r}
+library("httr")
+
+get_httpbin = GET("https://httpbin.org/get")
+
+status_code(get_httpbin)
+
+```
+
+```{r}
+content(get_httpbin)
+
+content(get_httpbin, "text")
+```
+
+```{r}
+headers(get_httpbin)
+```
+
+```{r}
+post_httpbin = POST("https://httpbin.org/post")
+
+status_code(post_httpbin)
+
+content(post_httpbin)
+```
+
+
+
+```{r}
+post_httpbin_bad = GET("https://httpbin.org/post")
+
+status_code(post_httpbin_bad)
+
+content(post_httpbin_bad)
+```
+
+
+# JSON
+
+## Parsing JSON
+
+```{r}
+# install.packages("jsonlite")
+library("jsonlite")
+
+my_profile = fromJSON('{    
+"name": "Your Name",
+"occupation": "Student",
+"eyecolor": "hazel",
+"salary": -14000,
+"starbucks": true,
+"music": {
+     "band": "Johnny Cash",
+      "song": "Ring of Fire"
+      },
+"required": ["name", "occupation"]
+}')
+```
+
+
+```{r}
+# This a list with another list embedded (e.g. music)
+my_profile
+```
+
+```{r}
+# Extracting the value from the embedded list gives:
+my_profile$music$band
+
+my_profile$music$song
+```
+
+## Example: Query GitHub's API
+
+```{r}
+gh_emoji = GET("https://api.github.com/emojis")
+
+fromJSON(content(gh_emoji, "text"))
+
+length(content(gh_emoji))
+```
+
+
+```{r}
+# Specify base URL
+base_url = "https://api.github.com"
+
+# Specify user
+gh_user = "tidyverse"
+
+# Create a request for information
+endpoint_resource = paste0("/users/", gh_user ,"/repos")
+
+# Make a url
+url = paste0(base_url, endpoint_resource)
+url
+```
+
+
+
+```{r}
+# Form a GET request to obtain a list of repos on GitHub
+gh_get_repos = GET(url)
+gh_get_repos
+```
+
+
+
+```{r}
+# Acquire results in a list
+gh_list_repos = content(gh_get_repos)
+
+gh_list_repos
+```
+
+```{r}
+# May generate a list OR a data frame
+gh_data_repos = fromJSON(content(gh_get_repos, "text"))
+
+gh_data_repos
+```
+
+```{r}
+# Check underlying structure
+str(gh_data_repos)
+```
+
+```{r}
+# Directly verify if a data frame
+is.data.frame(gh_data_repos)
+```
+
+
+### Exercise: Retrieve Tags
+
+```{r}
+# Specify base URL
+base_url = "https://api.github.com"
+
+# Specify user
+gh_user = "RcppCore"
+
+# Specify the repository
+gh_repo = "Rcpp"
+
+# GET /repos/:owner/:repo/tags
+
+# Create a request for information
+endpoint_resource = paste0("/repos/", gh_user ,"/", gh_repo,"/tags")
+
+# Make a url
+url = paste0(base_url, endpoint_resource)
+url
+```
+
+```{r}
+gh_tag_rcpp = GET(url)
+
+fromJSON(content(gh_tag_rcpp, "text"))
+
+length(content(gh_tag_rcpp))
+```
+
+
+```{r}
+got_characters = 
+  GET("https://www.anapioficeandfire.com/api/characters")
+
+gof_characters_df = fromJSON(content(got_characters, "text"))
+
+```
+
+
+```{r}
+View(gof_characters_df)
+```
+
+
+
+
+
+
+
+
+

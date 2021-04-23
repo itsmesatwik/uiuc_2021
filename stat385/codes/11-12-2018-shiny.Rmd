@@ -1,0 +1,501 @@
+---
+title: "Shiny"
+author: "JJB + Course"
+date: "11/12/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+runtime: shiny
+---
+
+# Lists
+
+## Example: List Creation
+
+```{r}
+# Create a list with different data types
+x = list(
+  c(1, 2, 3),
+  "text",
+  c(1.3, 2.5),
+  list(c(TRUE, FALSE)),
+  list(c(-1, -5))
+)
+
+# Only has a length
+length(x)
+
+# Notice NULL is presence on dim
+dim(x)
+```
+
+## Example: Mixed (Heterogenous) Function Return
+
+```{r}
+return_list = function(a, b, c) {
+                             # ||  Unnamed value
+  list(element1 = a, toad = b, c )
+       # ^^^^^       ^^^^  Named values 
+}
+
+# Emphasize the mixing of data types
+out = return_list(1:3, c("a", "b"), c(2 + 3i, 4 - 1i))
+out
+```
+
+We could have achieved the above using:
+
+```{r}
+out = list(1:3, c("a", "b"), c(2 + 3i, 4 - 1i))
+```
+
+The emphasis, however, was on how a list could be beneficial in the scope of a
+function.
+
+## Example: Accessing List Items
+
+```{r}
+# Retrieve by name the list item called `element1`
+out$element1
+
+# Retrieve by position the list item called `element1`
+out[[1]]
+
+# Update value
+out$element1 = c(5L, 42L, -2L) 
+
+# Alternatively, we could use:
+# out[[1]] = c(5L, 42L, -2L) 
+
+# View values
+out[[1]]
+```
+
+
+## Example: Preserving vs. Simplifying List Structure
+
+```{r}
+# Single brackets retain the list structure around item
+out[2]
+
+# Double bracket remove the list structure around item
+out[[2]]
+
+# Dollar signs also remove the list structure around item
+out$toad
+```
+
+
+Let's explore what happens when we subset a `list` with
+the single bracket operator.
+
+```{r}
+who_i_am = list(name = "James",
+                job = "Instructor",
+                pay = "Not enough",
+                course = 385,
+                "drones")
+
+who_i_am[["name"]]
+
+# Notice in environment it's a value
+my_name = who_i_am[["name"]]
+
+# Notice we've created another "Data" object
+# that can be inspect via the magnifine glass.
+my_name_list = who_i_am["name"]
+```
+
+We can see a similar pattern of simplification of data structures during other subset operations.
+
+
+```{r}
+a = data.frame(x = 1:10, y = 2:11)
+
+# Returns a vector
+a[, 1]
+
+# Returns a data frame with column
+a[, 1, drop = FALSE]
+
+
+# Errors:
+# Reduced to an atomic vector so, we cannot use $ to extract.
+# a[, 1]$x
+
+# This would work still as we have maintained the underlying data structure of a data.frame
+a[, 1, drop = FALSE]$x
+```
+
+
+Unfortunation, the preservation of list structure doesn't quite follow the same semantics established with subsetting other elements.
+
+
+```{r}
+my_mat = matrix(1:10, nrow = 5)
+
+my_mat
+
+my_mat[1, ]
+
+my_mat[1,, drop = FALSE]
+```
+
+
+
+# Building a Shiny App
+
+## Minimal Shiny
+
+```{r}
+library(shiny)
+
+# Define UI ----
+ui = fluidPage(
+       # Make a page layout
+)
+
+# Define server logic ----
+server = function(input, output) { 
+    # Backend logic
+    # Retrieve values from input 
+    # Save values to output 
+    # Both are lists that are accessed with input$ and output$
+}
+
+# Launch the App
+shinyApp(ui = ui, server = server )
+```
+
+## Layout Mock
+
+```{r}
+library("shiny")
+
+# Define UI ----
+ui = fluidPage(
+    titlePanel("My Shiny App Title"),  # Title
+    sidebarLayout(
+      sidebarPanel(
+        h1("SideBar Title")            # Sidebar Text
+      ),                               # Note HTML
+      mainPanel("Main Content")        # Content Text
+    ) # close: sidebarLayout()
+  ) # close: fluidPage()
+
+# Define server logic ----
+server = function(input, output) { 
+  # Not used
+}
+
+# Launch the App
+shinyApp(ui = ui, server = server )
+```
+
+
+```{r}
+h1('My first heading')
+```
+
+
+## HTML UI App Example
+
+```{r}
+# Taken from: https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/
+
+library(shiny)
+
+# Define UI ----
+ui = fluidPage(
+  titlePanel("My Star Wars App"),
+  sidebarLayout(
+    sidebarPanel(),
+    mainPanel(
+      h6("Episode IV", align = "center"),
+      h6("A NEW HOPE", align = "center"),
+      h5("It is a period of civil war.", align = "center"),
+      h4("Rebel spaceships, striking", align = "center"),
+      h3("from a hidden base, have won", align = "center"),
+      h2("their first victory against the", align = "center"),
+      h1("evil Galactic Empire.", align = "right")
+    )
+  )
+)
+
+# Define server logic ----
+server = function(input, output) {
+  
+}
+
+# Run the app ----
+shinyApp(ui = ui, server = server)
+```
+
+## Add Inputs to UI
+
+```{r}
+library("shiny")
+
+# Define UI ----
+ui = fluidPage(
+    titlePanel("Data Summarizer"),                          # Title
+    sidebarLayout(
+      sidebarPanel(
+        h3("Data Selection"),                               # Note the , 
+        
+        # Dropdown Menu with fixed Choices
+        selectInput(inputId = "ds",                         # Name
+                    label = "Choose a dataset:",            # Label
+                    choices = c("iris", "Spam", "mtcars")), # Choices
+        
+        # Numeric Field
+        numericInput(inputId = "obs",                       # Name
+                     label = "Number of Obs:",              # Label
+                     value = 10),                           # Default Value
+        
+        submitButton("Load Preview Data")                   # Update data
+      ), # close: sidebarPanel()
+      mainPanel("Main Content")                             # Content
+    ) # close: sidebarLayout()
+) # close: fluidPage(
+
+
+
+# Define server logic ----
+server = function(input, output) {
+  
+}
+
+# Run the app ----
+shinyApp(ui = ui, server = server)
+```
+
+
+## Adding Output Areas to UI
+
+```{r}
+library("shiny")
+
+# Define UI ----
+ui = fluidPage(
+    titlePanel("Data Summarizer"),                          # Title
+    sidebarLayout(
+      sidebarPanel(
+        h3("Data Selection"),                               # Note the , 
+        
+        # Dropdown Menu with fixed Choices
+        selectInput(inputId = "ds",                         # Name
+                    label = "Choose a dataset:",            # Label
+                    choices = c("iris", "Spam", "mtcars")), # Choices
+        
+        # Numeric Field
+        numericInput(inputId = "obs",                       # Name
+                     label = "Number of Obs:",              # Label
+                     value = 10),                           # Default Value
+        
+        submitButton("Load Preview Data")                   # Update data
+      ), # close: sidebarPanel()
+       mainPanel(
+        h3("Head of the Dataset"),                          # HTML
+        tableOutput("view"),                                # Table View
+    
+        h3("Dataset Summary"),                              # HTML
+        verbatimTextOutput("summary")                       # Output Asis
+        ) # close: mainPanel()
+    ) # close: sidebarLayout()
+) # close: fluidPage(
+
+
+
+# Define server logic ----
+server = function(input, output) {
+  
+}
+
+# Run the app ----
+shinyApp(ui = ui, server = server)
+```
+
+
+## UI to Server Mapping
+
+```{r}
+library("shiny")
+library("datasets") # for Spam data
+
+data("Spam", package = "datasets")
+
+# Define UI ----
+ui = fluidPage(        
+        # Dropdown Menu with fixed Choices
+        selectInput(inputId = "ds",                           # Name
+                             label = "Choose a dataset:",   # Label
+                             choices = c("iris", "Spam", "mtcars")),
+        verbatimTextOutput("summary")               # Output Asis
+) # close: fluidPage(
+
+# Define server logic ----
+server = function(input, output) {
+
+  output$summary = renderPrint({   # Summary Render
+    summary(get(input$ds))
+  }) # close: renderPrint()
+
+}
+
+# Run the app ----
+shinyApp(ui = ui, server = server)
+```
+
+
+## Final Shiny App
+
+```{r}
+library("shiny")
+library("datasets") # for Spam data
+
+# Define UI ----
+ui = fluidPage(
+    titlePanel("Data Summarizer"),        # Title
+    sidebarLayout(
+      sidebarPanel(
+        h3("Data Selection"),             # Note the , 
+        
+        # Dropdown
+        selectInput("ds",                 # Name
+                    "Choose a dataset:",  # Label
+                    choices = c("iris", "Spam", "mtcars")),
+        
+        numericInput("obs",               # Name
+                     "Number of Obs:",    # Label
+                     10),                 # Default Value
+        
+        submitButton("Load Preview Data") # Update data
+      ), # close: sidebarPanel()
+      mainPanel(
+        h3("Head of the Dataset"),    # HTML
+        tableOutput("view"),          # Table View
+        
+        h3("Dataset Summary"),        # HTML
+        verbatimTextOutput("summary") # Output Asis
+      ) # close: mainPanel()
+    ) # close: sidebarLayout()
+  ) # close: fluidPage(
+
+# Define server logic ----
+server = function(input, output) {
+  
+  active_dataset = reactive({   # Reactive
+    if(input$ds == "iris") {
+      iris
+    } else if (input$ds == "Spam") {
+      Spam
+    } else {
+      mtcars
+    }
+  }) # close: reactive()
+  
+  output$summary = renderPrint({   # Summary Render
+    summary(active_dataset())
+  }) # close: renderPrint()
+  
+  output$view = renderTable({      # Table Render
+    head(active_dataset(), n = input$obs)
+  }) # close: renderPrint()
+  
+}
+
+# Launch the App
+shinyApp(ui = ui, server = server)
+```
+
+## Exercise: Making a plot
+
+```{r}
+library(shiny)
+
+# Define UI ----
+ui = fluidPage(
+  h1("Grapher"),
+  sidebarLayout(
+    sidebarPanel(
+      # insert a numeric input 
+      numericInput(inputId = "nrows",
+                   label = "Number of Rows",
+                   value = 5)
+    ),
+    mainPanel(
+      # insert an output type for plotting 
+      plotOutput(outputId = "data_graph")
+    )
+  )
+)
+
+# Define server logic ----
+server = function(input, output, session) {
+  # Assignment: Plot the first input$nrows columns of a
+  # data frame of your choosing, using head() and plot()
+  # 
+  # Hint: You may need to load another library at the top of the file ;-)
+  
+  output$data_graph = renderPlot({
+    ggplot( head(cars, n = input$nrows) ) +
+      geom_point(aes(speed, dist))
+  })
+}
+
+# Launch the App
+shinyApp(ui, server)
+```
+
+
+## Exercise: Refractoring Code to use a Conductor
+
+```{r}
+library(shiny)
+library(ggplot2)
+
+# Define UI ----
+ui = fluidPage(
+  h1("Grapher with Reactivity"),
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("nrows", "Number of rows", 10, min = 1)
+    ),
+    mainPanel(
+      plotOutput("plot"),
+      tableOutput("table")
+    )
+  )
+)
+
+# Define server logic ----
+server = function(input, output, session) {
+  # Assignment: Factor out the cars[sample(nrow(cars), input$nrows),] so
+  # that the code isn't duplicated and the operation isn't
+  # performed twice for each change to input$nrows.
+  
+  subset_data = reactive({
+    # Move out the random sampling
+    # to a shared cache.
+    cars[sample(nrow(cars), input$nrows),]
+  })
+  
+  output$plot = renderPlot({
+    ggplot(
+      subset_data()
+      ) +
+      geom_point(aes(speed, dist))
+  })
+  
+  output$table = renderTable({
+    subset_data()
+    })
+}
+
+# Launch the App
+shinyApp(ui, server)
+```
+

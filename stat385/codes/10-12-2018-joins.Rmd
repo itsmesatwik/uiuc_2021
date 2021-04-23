@@ -1,0 +1,303 @@
+---
+title: "Joins"
+author: "JJB + Course"
+date: "10/12/2018"
+output:
+   html_document:
+     toc: true
+     toc_float:
+       collapse: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Split Data
+
+## Example: Student Data
+
+```{r}
+Students = data.frame(id        = 1:3,
+                      firstname = c("Billy", "Theodore", "Keeya"),
+                      lastname  = c("Joe", "Squirrel", "Nod"),
+                      age       = c(23, 25, 21),
+                      instate   = c(FALSE, TRUE, TRUE))
+Students
+```
+
+```{r}
+Grades = data.frame(student_id = c(1, 2, 1, 3),
+                    course_id  = c("STAT385", "STAT 432", "HIST100", "STAT385"),
+                    grade      = c("A+", "A-", "A", "B+"))
+
+Grades
+```
+
+```{r}
+library("dplyr")
+
+
+dplyr::left_join(Students,
+                 Grades, 
+                 by = c("id" = "student_id") )
+```
+
+
+```{r}
+# Same number of rows, exact ordering, no repeated columns.
+first_df = data.frame(A = c(1, 2, 3, 4), 
+                      B = c("A", "B", "C", "A"))
+first_df
+```
+```{r}
+sec_df = data.frame(D = c(38.4, 39.9, 40, 20.5))
+sec_df
+```
+
+```{r}
+# Merge the data together
+merged_df = data.frame(first_df, sec_df)
+merged_df
+```
+
+
+```{r}
+# Merge the data together
+merged_df = data.frame(sec_df, first_df)
+merged_df
+```
+
+
+```{r}
+# Or, bind by column
+merged_df_cols = cbind(first_df, sec_df)
+merged_df_cols
+```
+
+```{r}
+# Retrieve specific columns with the same order
+selected_df = data.frame(first_df$A, sec_df$D)
+
+selected_df
+```
+
+
+```{r}
+# Same number of rows, exact ordering, no repeated columns.
+bad_first_df = data.frame(A = c(4, 3, 2, 1),
+ B = c("A", "C", "B", "A"))
+bad_first_df
+```
+
+```{r}
+bad_sec_df = data.frame(A = c(2, 1, 4, 3),
+ D = c(39.9, 38.4, 20.5, 40))
+bad_sec_df
+```
+
+```{r}
+data.frame(bad_first_df,bad_sec_df)
+```
+
+
+```{r}
+# Order data frames
+ordered_first_df = bad_first_df[order(bad_first_df$A), ]
+ordered_sec_df = bad_sec_df[order(bad_sec_df$A), ]
+# Combine the ordered data frames
+ordered_merged_df = data.frame(ordered_first_df$A,
+ ordered_first_df$B,
+ ordered_sec_df$D)
+```
+
+
+## Example: Point/Grade Data
+
+```{r}
+X = data.frame(Key = 1:3, 
+               Points = c(90, 84, 75))
+
+Y = data.frame(Key = c(1,2,4), 
+               Letters = c("A", "B", "D"))
+```
+
+# Mutating Joins
+
+## Example: Inner Join
+
+```{r}
+dplyr::inner_join(X, Y, by = "Key")
+merge(X, Y, by = "Key")
+```
+
+## Example: Full
+
+```{r}
+dplyr::full_join(X, Y, by = "Key")
+merge(X, Y, by = "Key", all.x = TRUE, all.y = TRUE)
+```
+
+## Example: Left
+
+```{r}
+dplyr::left_join(X, Y, by = "Key")
+merge(X, Y, by = "Key", all.x = TRUE)
+```
+
+## Example: Right
+
+```{r}
+dplyr::right_join(X, Y, by = "Key")
+merge(X, Y, by = "Key", all.y = TRUE)
+```
+
+## Example: Equivalence
+
+Note the reordering of the columns...
+
+```{r}
+dplyr::left_join(X, Y, by = "Key")
+```
+
+```{r}
+dplyr::right_join(Y, X, by = "Key")
+```
+
+# Example: Filtering Joins
+
+```{r}
+dplyr::anti_join(X, Y, by = "Key")
+```
+
+
+```{r}
+dplyr::semi_join(X, Y, by = "Key")
+```
+
+
+
+# `dplyr`, `dbplyr` and RDBMS systems 
+
+
+## Example: Direct Querying
+
+Within code chunk, we're setting up our database. 
+
+```{r setup-db}
+# install.packages(c("dplyr", "dbplyr", "RSQLite"))
+library("RSQLite")
+library("dplyr")
+
+# Setup database and use local data sets
+con = DBI::dbConnect(RSQLite::SQLite(), path = ":dbname:")
+
+# Copy to database via dplyr
+dplyr::copy_to(con, mtcars, "mtcars")
+dplyr::copy_to(con, iris, "iris")
+
+# View listed tables
+dbListTables(con)
+```
+
+To work with a SQL database and `dplyr` we need to create a source via 
+`tbl`. 
+
+```{r}
+# Create a table object for dplyr
+db_mtcars = tbl(con, "mtcars")
+
+# View table
+db_mtcars
+
+# Equivalent to: 
+# dbGetQuery(con, 'SELECT * FROM mtcars')
+```
+
+We can also directly embed SQL into an R Markdown document by specifying a connection...
+
+```{sql, connection=con}
+SELECT * FROM mtcars LIMIT 5
+```
+
+In _SQL_-land, there is a preference to SPEAK IN CAPITAL LETTERS. However, _SQL_ is largely case insensitive. Thus, the same query in lower letters will also work
+
+```{sql, connection=con}
+select * from mtcars limit 5
+```
+
+```{sql, connection=con}
+SELECT mpg, disp FROM mtcars ORDER BY mpg
+```
+
+## Example: Lahman Data
+
+The [Lahman data set](http://www.seanlahman.com/baseball-archive/statistics/) is compiled yearly into a SQLite-variant.
+
+https://github.com/jknecht/baseball-archive-sqlite
+
+```{r work-with-lehman}
+# Download the data into your project workspace
+# download.file("https://github.com/jknecht/baseball-archive-sqlite/blob/master/lahman2016.sqlite?raw=true", "lahman2016.sqlite")
+
+library("dplyr")
+db_lahman = DBI::dbConnect(RSQLite::SQLite(), dbname="lahman2016.sqlite")
+
+# View listed tables
+dbListTables(db_lahman)
+
+# Specify a table
+db_batting = tbl(db_lahman, "Batting")
+
+# Compute averages
+db_batting %>%
+  summarise(avg_hr = mean(HR),
+            avg_h = mean(H))
+
+```
+
+There is an underlying query process that can be shown.
+
+```{r view-query}
+# Retrieve specific values
+top100 = db_batting %>%
+  head(100) %>%
+  select(playerID, yearID, AB, H, HR)
+
+# Show data
+top100
+
+# View underlying query
+top100 %>% 
+  show_query()
+```
+
+
+
+
+## Example: More Direct Access via `DBI`
+
+```{r}
+library(DBI)
+
+# Create a SQLite data base in memory 
+mydb = dbConnect(RSQLite::SQLite(), path = ":memory:")
+
+# Copy data.frame's to the database
+dbWriteTable(mydb, "X", X)
+dbWriteTable(mydb, "Y", Y)
+
+# View tables
+dbListTables(mydb)
+
+# Query database
+dbGetQuery(mydb, 'SELECT * FROM X WHERE "Points" < :x', 
+  params = list(x = 90))
+
+dbGetQuery(mydb, 'SELECT * FROM X WHERE "Points" < :x', 
+  params = list(x = 90))
+```
+
+

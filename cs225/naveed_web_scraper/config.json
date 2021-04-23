@@ -1,0 +1,7 @@
+{
+    "name": "Web Scraper",
+    "version": "1.0.1",
+    "author": "nriaziat",
+    "description": "Retrieves data from law databases on Internet.",
+    "field": "Law"
+}

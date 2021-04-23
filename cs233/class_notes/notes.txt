@@ -1,0 +1,7 @@
+Lectures: pen/pencil + iclicker
+Lab-section: pen/pencil, quiz, start on lab
+piazza: questions
+Web Homeworks: after every lecture in the beginning
+Labs: Part 1 due within 48 hours. Part 2 due weekly on Sunday nights. can be done in groups(up to 2). 
+Exams: see the wiki
+Office hourse: normal deal

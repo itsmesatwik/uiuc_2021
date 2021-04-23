@@ -1,0 +1,129 @@
+---
+title: "Examples using (R)Markdown"
+author: "JJB + Course"
+date: "08/31/2018"
+output:
+   html_document:
+     toc: true
+     toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Intro
+
+This document is arrange in two different ways. The first way is an "interactive" portion that will be done live in lecture. The second portion contains worked examples from the lecture slides. You can navigate the document by using the table of contents. 
+
+<!-- This is a comment in R Markdown -->
+
+<!-- We're using line breaks to separate the sections -->
+
+-------
+
+# Interactive
+
+Hello how are you doing STAT 385 FA 2018? 
+
+
+We have a head nod.
+
+**Question:** What are you going to do this weekend?
+
+_Student: STAT 385 Homework_
+
+
+**Question:** What are the best bars to go to? 
+
+
+1. Murphy's Bar
+1. Red Lion
+1. Green St. Cafe
+1. Red Lion
+
+
+```{r}
+
+1 + 1
+
+```
+
+
+
+-------
+
+# From Lecture Slides
+
+Writing text with emphasis in
+ *italics*, **bold** and `code style`.
+
+Line breaks create a new paragraph.
+Links can be hidden e.g.
+[illinois](www.illinois.edu) or
+not <http://illinois.edu> .
+
+- Write Selection Simulation
+- Conference Abstracts
+    - UseR
+    - Learning at Scale
+ 
+1. Apples
+1. Bananas
+1. Chobani
+    1. Pineapple
+    1. Everything else
+ 
+> "Never gonna give you up,
+>  never gonna let you down..."
+>
+> --- Rick Astley
+
+Inline math $a^2 + b^2 = c^2$
+
+Display math (centered math) $$1 - x = y$$
+
+Creating a Table
+
+| Left                         | Center                   | Right     |
+|------------------------------|:------------------------:|----------:|
+| Hey, check it out            | Colons provide           |    873    |
+| its **Markdown**             | alignment thus           |   1000    |
+| right in the table           | *centered* text          |           |
+
+
+
+```{r, echo = FALSE, cache = TRUE}
+# This code chunk creates the img directory and downloads the block-i.png to it.
+
+# We're hiding it from the report using echo = FALSE
+dir.create("img")
+download.file("https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Illinois_Block_I.png/414px-Illinois_Block_I.png", "img/block-i.png")
+```
+
+
+![Relative Path](img/block-i.png)
+
+<!-- ![Absolute path](~/Dropbox/stat385-su2018/img/block-i.png) -->
+
+Let's hide the _R_ code from showing up in the report!
+
+```{r ex-hide, echo = FALSE} 
+x = 1:10
+y = 11:20
+plot(x, y)
+```
+
+It's ideal to compute values inside of a code chunk and then reference 
+variables from _R_ inline.
+
+```{r calc-values, echo = FALSE} 
+# 
+x = 1:10
+x_mu = mean(x)
+x_sd = sd(x)
+``` 
+
+The _mean_ of **x** is  `r x_mu`  and the _standard deviation_ is `r x_sd` .
+
+We can also supply a pure expression: `r 2 + 3`.
