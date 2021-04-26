@@ -1,0 +1,1 @@
+After listening to some inspirational music Elon realizes that he wants to be a YOGI and leaves all of his possesions and earthly belongings and decides to meditate in the Himalayas with Hindu Sadhus.

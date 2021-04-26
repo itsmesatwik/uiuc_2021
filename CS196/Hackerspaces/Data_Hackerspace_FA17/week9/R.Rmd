@@ -1,0 +1,198 @@
+---
+title: "196_R"
+author: "Tyler Kim"
+date: "11/1/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(error=TRUE)
+```
+
+### R Markdown and Basic R
+
+The assignment should be all written in RMarkdown (.rmd) and knitted to a HTML file.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
+
+
+You can embed an R code chunk like this:
+
+
+```{r cars}
+summary(cars)
+```
+
+#### Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+### Let's add some steroid. 
+
+For this, we will use the `faithful` dataset. This is a default dataset in `R`, so there is no need to load it. You should use `?faithful` to learn about the background of this dataset.
+
+Suppose we would like to predict the duration of an eruption of [the Old Faithful geyser](http://www.yellowstonepark.com/about-old-faithful/) in [Yellowstone National Park](https://en.wikipedia.org/wiki/Yellowstone_National_Park) based on the waiting time before an eruption.
+
+Let's fit a simple linear model in `R` that accomplishes this task. We will store the results in a variable called `faithful_model`. 
+
+```{r}
+faithful_model = lm(eruptions ~ waiting, data=faithful)
+summary(faithful_model)
+
+```
+
+Let's output only the estimated regression coefficients. We will interpret $\beta_0$ and $\hat{\beta_1}$ in the *context of the problem*. 
+
+```{r}
+coef(faithful_model)
+```
+
+Let's use our model to predict the duration of an eruption based on a waiting time of **80** minutes. 
+
+```{r}
+range(range(faithful$waiting))
+```
+
+```{r}
+predict(faithful_model, data.frame(waiting = 80))
+```
+
+```{r}
+predict(faithful_model, data.frame(waiting = 120))
+```
+
+Calculating the RSS for this model.
+```{r}
+sum(resid(faithful_model)^2)
+```
+
+Let's create a scatterplot of the data and add the fitted regression line. Make sure your plot is well labeled and is somewhat visually appealing.
+
+```{r}
+plot(eruptions ~ waiting, data=faithful,
+     xlab = "Waiting Time (mins)",
+     ylab = "Eruptions Length (mins)",
+     main = "Eruption Leanth vs. Waiting Time",
+     pch = 18,
+     cex = 1,
+     col = "red")
+abline(faithful_model, col = "blue")
+```
+
+
+## Challenge 1
+This section contains many “errors” that appear in R code. Your job is to solve them and explain how you fixed the problem.
+
+```{r}
+#1
+f = function(x){
+  n = a+x
+}
+
+f(1)
+
+```
+
+```{r}
+#2
+p = function(x){
+  log(p/(1-p))
+}
+
+vals = seq(0, 1, by = 0.1)
+
+p(vals)
+
+```
+
+```{r}
+#3
+d = c(1, 3, NA, 5, 6, 9)
+
+mean(d) == 1/length(d)*sum(d)
+
+```
+
+```{r}
+#4
+set.seed(145)
+
+d = sample(1:10, 5)
+b = sample(1:10, 5)
+
+if(d > b){
+  d + 5
+}
+else {
+  b * 2
+}
+
+```
+
+```{r}
+#5
+set.seed(1234)
+
+f = function() {
+    if (runif(1) > .8) stop("oops")
+    TRUE
+}
+
+g = function() {
+  tryCatch(f(),
+           error = function(err) { warning(conditionMessage(err)) }
+           )
+}
+
+a = replicate(10, g())
+if(is.logical(a) && sum(a) > 0){
+  cat("We had a few successes!\n")
+}
+
+```
+
+## Challenge 2
+
+RMarkDown is important.
+
+You can literally do Web-Dev in RMarkdown and RMarkdown only!
+
+
+You can literally do Web-Dev in RMarkdown and RMarkdown only!
+
+##### Round 1
+- Download the html for http://xkcd.com/
+- Extract the URL for the daily comic.
+- Download the comic image to disk.
+  - Include the Comic picture inside the R Markdown file.
+  - If I appreciate the comic, I might grade easily?
+
+##### Round 2  (optional & for extra credit /s)
+- Establish an ```html_session``` with ```rvest``` pointed at https://slashdot.org/.
+  - You are only allowed to hardcode https://slashdot.org/
+- Navigate to the Science news section of slashdot given at
+
+
+https://science.slashdot.org/ by having ```rvest``` click the appropriate link. - Scrap all of the titles of the articles on the first and second pages. - Provide the selector information that you used. - Scrap all the URLs given within each of the story descriptions. - Provide the selector information that you used. - List the URLs next to the Titles. - You can embed a ```list``` with the titles inside a data.frame!
+
+## Challenge 3.
+
+Let's refer back to Week4's challenge. We are going to - whoops, I meant - you guys will be doing the Week 4 Challenges in R!
+
+
+Here are the links to the Week 4 Challenge + the raw date source
+https://github.com/CS196Illinois/Data_Hackerspace/blob/master/week4/NumpyAndPandas.ipynb
+https://raw.githubusercontent.com/mwaskom/seaborn-data/master/titanic.csv
+
+
+###### 1. Calculate the survival rates of passengers by class (First, Second, Third)
+
+
+###### 2. Calculate the average fare paid by those who survived compared to the fare paid by those who didn't
+
+
+###### 3. Plot the ages of the female survivors that embarked at Cherbourg

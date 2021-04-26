@@ -1,0 +1,1 @@
+Elon realizes it was all a dream and that he was sleeping all this time in his room inside the staircase cupboard. His scar on his forehead was hurting just like it had hurt all these years signalling something terrible was about to happen.

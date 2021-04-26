@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Movie Recommender</title>
+    <!-- <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet"> -->
+    <link href="../static/styles/signup.css" rel="stylesheet">
+    <script src="../static/script/jquery-1.11.2.js"></script>
+    <script src="../static/script/modal_home.js"></script>
+  </head>
+  <body>
+ 
+    <div class="container">
+      <div class="header">
+        <nav>
+          <div data-role="page" id="welcome" data-url="{{ url_for('renderHome') }}"></div>
+            <div class="topnav">
+                <p>Welcome, </p>
+                <p name='home_name' id ='home_name'>{{name}}</p>
+                <p>Look up a movie or TVshow</p>
+                <!-- <li role="presentation" class="active"><a href="./renderWatched">What have you watched?</a></li>
+                <li role="presentation" class="active"><a href="./renderWatched_delete">delete from watched</a></li> -->
+                <button type="button" id="btnGoHome" data-source="{{name}}">Return Home</button>
+                <li role="presentation" class="active"><a href="./renderEmma">check out tv show and movie average ratings here</a></li><br>
+                <button id="btnPaulQuery" class="btn btn-lg btn-primary btn-block" type="button">Check out which year has the bet movie!</button><br>
+                <button id="btnRenderReviewPage" class="btn btn-lg btn-primary btn-block" type="button">Look at reviews</button><br>
+                <button id="btnGallery" class="btn btn-lg btn-primary btn-block" type="button">Your personal gallery</button><br>
+                <button id="btnSignOut" class="btn btn-lg btn-primary btn-block" type="button">Sign out</button><br>
+                <button id="btnDeleteUser" class="btn btn-lg btn-primary btn-block" type="button">Delete User</button><br>
+                <form class="form-signin">
+                <input type="name" name="inputName" id="inputName" class="form-control" placeholder="Name" required autofocus>
+
+                <fieldset>
+                  <legend>Filter by Platform</legend>
+                    <div>
+                      <input type="checkbox" id="netflix" name="platform" value="Netflix">
+                      <label for="netlix">Netflix</label>
+                    </div>
+                    <div>
+                      <input type="checkbox" id="hulu" name="platform" value="Hulu">
+                      <label for="hulu">Hulu</label>
+                    </div>
+                    <div>
+                      <input type="checkbox" id="prime" name="platform" value="Prime">
+                      <label for="prime">Prime Video</label>
+                    </div>
+                    <div>
+                      <input type="checkbox" id="disney" name="platform" value="Disney">
+                      <label for="disney">Disney</label>
+                    </div>
+                </fieldset>
+                <div>
+                  <label for="inputStartDate" class="sr-only">Release Year or Start Date</label>
+                  <input type="startDate" name="inputStartDate" id="inputStartDate" class="form-control form-control-sm" placeholder="YYYY-MM-DD">
+                </div>
+                <button id="btnSearch" class="btn btn-lg btn-primary btn-block" type="button">Search</button>
+
+                </form>
+              </div>
+        </nav>
+      </div>
+ 
+      <!-- <div class="jumbotron">
+        <h1>Choose</h1>
+        <button id="goSignUp" class="button btn btn-lg btn-primary btn-block" a href="./signup.html"  type="button">Sign up</button>
+        <button id="goSignIn" class="button btn btn-lg btn-primary btn-block" a href="./signin.html"  type="button">Sign in</button>
+      </div> -->
+      <!-- <footer class="footer">
+        <p>&copy; This is user home {{name}}</p>
+      </footer> -->
+    </div>
+
+    <div>
+    <h1> Recommended movies </h1>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th class="Name">Name</th>
+                            <th class="Type">Type</th>
+                            <th class="Popularity">Popularity</th>
+                            <th class="AverageRating">Average Rating</th>
+                            <th class="Platform">Platform</th>
+                            <th class="Genre">Genre</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td>{{item.Name}}</td>
+                                <td>{{item.Type}}</td>
+                                <td>{{item.Popularity}}</td>
+                                <td>{{item.AverageRating}}</td>
+                                <td>{{item.Platform}}</td>
+                                <td>{{item.Genre}}</td>
+                        {% endfor %}
+                        
+                        </tbody>
+                    </table>
+              </div>
+  </body>
+</html>

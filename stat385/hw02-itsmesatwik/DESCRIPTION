@@ -1,0 +1,6 @@
+Type: Compendium
+Package: compendium
+Version: 0.2.0
+Depends: ggplot2, rmarkdown, readxl, nasaweather
+Suggests: testthat, lintr
+Remotes: coatless/uiucdata, ropenscilabs/testrmd

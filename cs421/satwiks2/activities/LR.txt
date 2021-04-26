@@ -1,0 +1,33 @@
+I0. S -> . a E f { a: s1 }
+       | . x F   { x: s2 }
+
+I1. S -> a . E f { E: g3 }
+    E -> . E y   { E: g3 }
+       | . z     { z: s4 }
+
+I2. S -> x . F   { F: g5 } 
+    F -> . a E   { a: s6 }
+       | . a F   { a: s6 }
+
+I3. S -> a E . f { f: s7 }
+    E -> E . y   { y: s8 }
+
+I4. E -> z .     { f,y,$: r3 }
+
+I5. S -> x F .   { $: r1 }
+
+I6. F -> a . E   { E: g9 }
+       | a . F   { F: g10 }
+    E -> . E y   { E: g9 }
+       | . z     { z: s4 }
+    F -> . a E   { a: s6 }
+       | . a F   { a: s6 }
+
+I7. S -> a E f . { $: r0 }
+
+I8. E -> E y .   { f,y,$: r2 }
+
+I9. F -> a E .  { $: r4 }
+    E -> E . y  { y: s8 }
+
+I10. F -> a F .  { $: r5 }

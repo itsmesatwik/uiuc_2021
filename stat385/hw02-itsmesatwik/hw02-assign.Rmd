@@ -1,0 +1,455 @@
+---
+title: 'hw02: Data Sphinx!'
+author: 'STAT 385, Fall 2018'
+date: 'Due: Friday, September 14th, 2018 at 6:00 PM'
+output:
+  html_document:
+    theme: readable
+    toc: yes
+    toc_float:
+      collapse: false
+always_allow_html: yes # required for PDF
+---
+
+```{r setup, include=FALSE}
+# Force all code to be displayed
+knitr::opts_chunk$set(echo = TRUE)
+
+# Enable inline testing
+library(testthat)
+options(testrmd_log = TRUE)
+testrmd::init()
+```
+
+# Overview 
+
+Please see the [homework policy](http://stat385.thecoatlessprofessor.com/homework-policy/)
+for detailed instructions and some grading notes. Failure to follow instructions
+will result in point reductions. In particular, make sure to commit each 
+exercise as you complete them. 
+
+> "Talk is cheap. Show me the code."
+>
+> --- **Linus Torvalds**, [on lkml](https://lkml.org/lkml/2000/8/25/132) August 25th, 2000
+
+## Objectives 
+
+The objectives behind this homework assignment are as follows:
+
+- Reading in Data;
+- Vectorization;
+- Recycling;
+- Writing Functions;
+- Using R Packages
+
+## Grading
+
+The rubric CAs will use to grade this assignment is:
+
+| Task                                                   | pts |
+|:-------------------------------------------------------|----:|
+| Link to GitHub Repository   	                         | 2   |
+| At least one commit per exercise (more is better!)     | 5   |
+| Commit messages that describe what changed	           | 5   |
+| I _vant_ to read your data                             | 10  |
+| The Recycler                                           | 17  |
+| Scientists Rock!                                       | 8   |
+| Winter is Coming                                       | 10  |
+| Excellency at UIUC                                     | 14  |
+| Total                                                  | 71  |
+
+## Note on Markdown
+
+If you need help with markdown syntax, please go to the "Help" menu and select the 
+_Markdown Quick Reference_ guide. This will open in the **Help** tab on
+the _lower-right_ corner of _RStudio_. For more examples, please see 
+[the literate programming slides](http://stat385.thecoatlessprofessor.com/lectures/02-literate-programming/02-literate-programming.pdf#page=26) and the  [in class examples of writing in _RMarkdown_](https://dl.dropboxusercontent.com/s/fb36l0isvhoko8e/08-31-2018-rmarkdown-sample.Rmd?dl=0).
+
+In addition, the following two RStudio Cheatsheets will be helpful:
+
+- [R Markdown Cheat Sheet](https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf)
+- [R Markdown Reference Guide](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+Both of these guides will be given to you during your time in the
+CBTF.
+
+## Package usage
+
+For this homework assignment, you may only use the following _R_ packages:
+
+```{r}
+pkg_list = c("ggplot2", "rmarkdown", "readxl", "nasaweather")
+```
+
+-----
+
+# Assignment
+
+### Collaborators
+
+If you worked with any other student in preparing these answers, please
+make sure to list their full names and NetIDs (e.g. `FirstName LastName (NetID)` ).
+
+## (12 Points) Exercise 0: Knowledge is Power
+
+- **[2 Points] (a)** Place a link to your `hw02` GitHub repository here.
+
+
+- **[5 Points] (b)** Commit every exercise as you finish them. There are
+    _five_ exercises (including this one).
+
+- **[5 Points] (c)** Make each commit message _meaningful_. 
+    - The bare minimum for a "meaningful" commit is a length of 15 characters.
+    - Inside the commit message, please make sure to appropriately describe 
+      what is happening.
+          - Simply stating, "Exercise 3" or "Ex3" is not sufficient.
+    - Provide detail on what _changed_.
+
+## (10 Points) Exercise 1: I _vant_ to read your data! 
+
+**[5 Points] (a)** The Division of Management Information (DMI) is trying
+to use _R_ to understand the Freshman Profile of Fall 2018. They are having
+difficult time importing the data into _R_ and creating a visualization.
+Help them out by:
+
+- **[3 Points]** translate the data given below into an _R_ `data.frame` called `fa17_enrolled`;
+- **[1 Point]** cleaning up the visualization code; and
+- **[1 Point]** allow the visualization code chunk to execute.
+
+_Hint_: Is `ggplot()` part of base R or is it an extension package to _R_?
+
+```bash
+Year  NEnrolled 
+1978	1
+1990	1
+1991	1
+1993	2
+1995	1
+1996	7
+1997	102
+1998	2496
+1999	4821
+2000	84
+2001	2
+```
+
+
+```{r my-vis, eval = FALSE}
+g = ggplot(<data-set-here>,
+       aes(x = Year, y = NEnrolled)) +
+  geom_col()
+
+g
+```
+
+```{r import-enrolled-data-check, test = TRUE}
+target_df = readRDS("test/fa2018-enrolled.rds")
+expect_true(exists("g"), info = "Verify graph was created.")
+expect_equal(fa17_enrolled, target_df, info = "Verify data frame was created correctly")
+```
+
+
+**[5 Points] (b)** One of your international collaborators wanted to use 
+the UIUC international student data at their school. However, the excel 
+spreadsheet that was sent over contains multiple sheets. Your collaborator is
+only interested in the Spring 2017 enrollment information. 
+
+- **[2 Points]** Help your colleague out by reading into _R_ only the `Spring2017` sheet from `enroll_global.xlsx`. Call the imported data `sp17_enrolled`.
+- **[1 Point]** Provide your colleague with a summary of the imported data. Save the
+  summary into `overview_sp17`.
+- **[2 Points]**Which variable (outside of "All") had the _largest_ overall amount of students?
+  How about the _smallest_ **mean** number of students? (Outside of 0).
+
+
+
+
+```{r enrolled-sp17}
+# your code here
+```
+
+```{r check-info, test = TRUE}
+# Load secured data
+target_df = readRDS("test/sp17-enrolled.rds")
+target_summary = readRDS("test/summary-sp17.rds")
+
+# Verify existence of objects
+expect_true(exists("overview_sp17"), info = "Verify summary was created.")
+expect_true(exists("sp17_enrolled"), info = "Verify graph was created.")
+
+# Verify data is accurate
+expect_equal(overview_sp17, target_summary, info = "Verify summary was obtained correctly.")
+expect_equal(sp17_enrolled, target_df, info = "Verify data frame was created correctly.")
+```
+
+
+
+## (17 Points) Exercise 2: The Recycler
+
+**To receive credit for answers to exercises listed here, you _must_ 
+use _R_'s recycling behavior.**
+
+_Hint_ You may wish to consult help documentation for the `rep()` function and
+revisit the vectorization slides at the 
+[Transforming Data](http://stat385.thecoatlessprofessor.com/lectures/05-transforming-data/05-transforming-data.pdf#page=32)
+and accompanying 
+[code](https://dl.dropboxusercontent.com/s/b8cdo82eaib6uul/09-07-2018-transforming-data.Rmd?dl=0).
+
+- **[2 Points] (a)** If we define `x = c(2, 10)` and `y = c(9, 2, 6, 10)`,
+   what should the output of `z = x * y` be? 
+   
+
+```{r vectorized-test, test = TRUE}
+target_vec = readRDS("test/z-result.rds")
+expect_equal(z, target_vec)
+```
+
+
+- **[3 Points] (b)** Explain why the output is occuring by:
+    - Creating an example using `rep()` that mimics
+      how _R_ is performing the operation.
+    - Describe the underlying property _R_ applies to vectors.
+
+
+- **[6 Points] (c)** What happens if we update `x` to be
+    `x = c(3, 5, 12, 18, 11)` and perform the operation again? 
+    - **[1 Points]** Recompute the result of `x*y` with the new `x`
+    - **[4 Points]** Create and include a _diagram_ that shows the 
+     process _R_ goes through when evaluating this operation.
+        - The included diagram can be a picture of a _hand_ sketch, digitally drawn(MS Paint, PowerPoint, Photoshop, ... ), or even done using [`DiagrammeR`](http://rich-iannone.github.io/DiagrammeR/).
+        - The choice is yours.
+
+
+
+
+- **[3 Points] (d)** Create the `alt_vec` vector with length 31 such that 
+      successive values alternating between polarity (e.g. `1` and `-1`). 
+    - For example, the first _four_ values of such a vector would be: 
+      `c(1, -1, 1, -1)`
+    - _Hint:_ Consider $(1)^2$, $(-1)^2$, $(1)^3$, and $(-1)^3$.
+    - _Hint:_ The colon (`:`) operator is useful to generate sequences.
+
+
+
+```{r seq-gen-alt-issue, test = TRUE}
+target_vec = readRDS("test/alternating-vec.rds")
+
+expect_equal(alt_vec, target_vec)
+```
+
+- **[3 Points] (e)** Construct the following sequence `k` of length 15:
+   $1, -2, 3, 4, -5, 6, 7, -8, 9, \ldots, 13, -14, 15$.
+   - This sequence _must_ be created using recycling...
+
+
+
+
+```{r seq-gen-custom-issue, test = TRUE}
+target_vec = readRDS("test/reconstructed-seq.rds")
+
+# expect_equal(k, target_vec)
+```
+
+## (8 Points) Exercise 3: Scientists Rock!
+
+**[3 Points] (a)** Develop a function called `fahrenheit_to_celcius()` that converts
+   fahrenheit (°F) to celcius (°C) given the definition of: 
+   $$f(x) = \frac{{5\left( {x - 32} \right)}}{9}$$
+
+```{r my-fahrenheit}
+#' @title Convert from Fahrenheit to Celcius
+#' @description
+#' Given a temperature in Fahrenheit convert it to the
+#' the temperature in Celcius.
+#'
+#' @param degrees_c A `numeric` vector containing temperature in degrees Celcius.
+#'
+#' @return A `numeric` vector of temperatures in degrees Fahrenheit.
+#' @details
+#' The function implements the following formula: 
+#' \eqn{f(x) = \frac{{5\left( {x - 32} \right)}}{9}}{5*(x-32)/9}
+#'
+#' @examples
+#' # Calculate a single value
+#' fahrenheit_to_celcius(32.0)
+#' 
+#' # Calculate multiple values
+#' fahrenheit_to_celcius(c(69.8, 98.6, 212.0))
+fahrenheit_to_celcius = function(degrees_c) {
+ 
+  # Logic implemented here
+   
+}
+```
+
+
+```{r fahrenheit-test, test = TRUE}
+# Check single value
+expect_equal(
+  fahrenheit_to_celcius(32),
+  0, 
+  info = "Check single fahrenheit value"
+)
+
+# Check vectorization
+expect_equal(
+  fahrenheit_to_celcius(c(69.8, 98.6, 212.0)),
+  c(21, 37, 100), 
+  info = "Check multiple fahrenheit values"
+)
+```
+
+
+**[5 Points] (b)** Now, create a function called `celcius_to_fahrenheit()` that
+does the inverse of the previous one. That is, write $f^{-1}(x)$ which
+translates celcius (°C) to fahrenheit (°F).
+
+- **[2 Points]** Derive the formula for the celcius to fahrenheit conversion
+  and include it in the `@details` section of the function's documentation.
+- **[3 Points]** Implement the derived formula in the _R_ function below.
+
+```{r my-celcius}
+#' @title Convert from Celcius to Fahrenheit
+#' @description
+#' Given a temperature in Celcius convert it to the
+#' the temperature in Fahrenheit.
+#'
+#' @param degrees_f A `numeric` vector containing temperature in degrees Fahrenheit.
+#'
+#' @return A `numeric` vector of temperatures in degrees Celcius.
+#' @details
+#' The function implements the following formula: 
+#' \eqn{LATEX-HERE}{REGULAR-SYMBOLS-HERE}
+#' An example of this is given above...
+#' @examples
+#' # Calculate with a single value
+#' celcius_to_fahrenheit(0)
+#' 
+#' # Calculate multiple values
+#' celcius_to_fahrenheit(c(21, 37, 100))
+celcius_to_fahrenheit = function(degrees_f) {
+ 
+  # Logic implemented here
+   
+}
+```
+
+
+```{r celcius-test, test = TRUE}
+# Check single value
+expect_equal(
+  celcius_to_fahrenheit(c(0)),
+  32, 
+  info = "Check single celcius value"
+)
+
+# Check vectorization
+expect_equal(
+  celcius_to_fahrenheit(c(21, 37, 100)),
+  c(69.8, 98.6, 212.0), 
+  info = "Check multiple celcius values"
+)
+```
+
+## (10 Points) Exercise 4: Winter is Coming
+
+**[2 Points] (a)** Install and load the `nasaweather` package. 
+**Comment** out the installation command in your `.Rmd` file. 
+(If you do not comment installation commands out, then they will be run
+every time you knit your `.Rmd` file.) 
+
+
+
+**[2 Points] (b)** Open up the help documentation for `glaciers` (the data set),
+find where the variables for the data set are listed and write in your
+_RMarkdown_ document _what_ the `country`  variable contains.
+
+
+**[6 Points] (c)** Provide summary information on the `glaciers` by:
+
+- writing a sentence that _dynamically_ describes the dimensions of the data;
+    - A _dynamic_ description means that sentences should use inline _R_ code.
+      Examples can be found in [Literate Programming]()
+- showing the last ten observations in the data set; and,
+- providing a summary overview of the data to understand its contents.
+
+
+
+
+
+##  (14 Points) Exercise 5: Excellency at UIUC
+
+Under this exercise, we will explore the "Teachers Ranked As Excellent" data
+at UIUC from Fall 1993 to Spring 2018 as compiled by 
+[Wade Fagen-Ulmschneider](http://waf.cs.illinois.edu/).
+Please download the data from:
+
+<https://raw.githubusercontent.com/wadefagen/datasets/master/teachers-ranked-as-excellent/uiuc-tre-dataset.csv> 
+
+To download the data, go to the webpage and press `Cntrl/Cmd + S` to save the
+file to your local computer. Name the file `uiuc-tre-dataset.csv`. _Upload it_
+onto RStudio Cloud. For help, see [**Page 20** of **Reading 0**](https://github.com/stat385uiuc/rstudio-cloud-intro/raw/master/01-rstudio-cloud-stat385.pdf).
+
+This data has a file extension of **CSV** form. Contained in the data are the
+following variables:
+
+- `term`: Two letter semester code (`sp`, `su`, `fa`, or `wi`) followed by a four digit year.
+    - Examples: `sp2017`, `fa2013`, `su2012`.
+- `unit`: The CITL-supplied headers for the unit teaching the course.
+    - Examples: `ACCOUNTANCY`, `SOCIAL WORK`, `LINGUISTICS`, `NUCLEAR, PLASMA & RAD. ENGR.`
+- `lname`: The last name of the teacher.
+    - Examples: `FAGEN-ULMSCHNEIDER`, `FLANAGAN`, `FLECK`
+- `fname`: The first letter of the first name of the teacher.
+    - Examples: `W`, `K`, `M`
+- `role`: `Instructor` or `TA`
+- `ranking`: `Excellent` or `Outstanding`
+- `course`: The course the teacher was ranked as excellent.  If no course is given, the `course` field is set to `?` (this includes cases when the raw data lists the course as `0`, `000`, or `999`).
+    - Examples: `199`, `225`, `560`, `?`
+
+**[2 points] (a)** Import into _R_ the data in `uiuc-tre-dataset.csv` with the 
+variable name `teaching_list_data`. As `course` contains a value that is
+_not_ `NA`, which is how _R_ represents missing values, you must use the parameter 
+`na.strings = c("?", "NA")` in the appropriate `read.*()` function. 
+If you need help, please see the appropriate help documentation via `?`.
+
+**NB** The `*` in the `read.*()` statement is a placeholder for the type of file
+you want to read in. 
+
+
+**[2 points] (b)**  Retrieve the dimensional information for this data using
+only one function.
+
+
+**[4 points] (c)** Perform a summary of the `teaching_list_data`. Within the summary
+output, what variable output is different from the rest? What might have caused this? 
+_Hint_ Consider looking at the structure of `teaching_list_data`. 
+
+
+
+
+**[2 points] (d)** Who was your favorite teacher at UIUC? Search their
+last name in all capitals.
+
+```{r my-fav-teacher, eval = FALSE}
+teaching_list_data[teaching_list_data$lname == "YOUR TEACHERS LAST NAME HERE IN CAPITALS", ]
+```
+
+
+
+**[4 points] (e)** Fix the following code so that it:
+
+1. doesn't error;
+1. produces a graph; and 
+1. hides the code.
+
+_Hint_ for the last two requirements look at different code chunk options.
+
+```{r ggplot2-code, eval = FALSE}
+ggplot(teaching_list_data, aes(fname)) + 
+  geom_bar() +
+  facet_wrap( ~role) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Frequency",
+       x = "First Name Letter")
+```
+
+

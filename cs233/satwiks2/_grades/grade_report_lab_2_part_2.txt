@@ -1,0 +1,28 @@
+Grades for version committed on time
+	extract_message: 40.0 / 40
+			*Passed test: simple
+				*Encoded message: [18, 54, 48, 94, 65, 127, 127, 0] (60^A).
+				*Expected decode: [112, 107, 106, 104, 111, 102, 120, 0] (pkjhofx)
+				*Actual decode: [112, 107, 106, 104, 111, 102, 120, 0] (pkjhofx)
+			*Passed test: 3 words
+				*Encoded message: [84, 26, 169, 40, 147, 255, 255, 0, 233, 130, 172, 100, 0, 255, 239, 0, 170, 153, 140, 40, 53, 255, 191, 0, 14, 12, 1, 1, 12, 15, 15, 0] (T©(ÿÿé¬dÿïª(5ÿ¿).
+				*Expected decode: [116, 114, 97, 110, 115, 108, 97, 116, 97, 98, 108, 101, 32, 109, 105, 103, 114, 97, 116, 111, 114, 121, 32, 103, 108, 97, 115, 115, 0] (translatable migratory glass)
+				*Actual decode: [116, 114, 97, 110, 115, 108, 97, 116, 97, 98, 108, 101, 32, 109, 105, 103, 114, 97, 116, 111, 114, 121, 32, 103, 108, 97, 115, 115, 0, 0, 0, 0] (translatable migratory glass)
+			*Passed test: 5 words
+				*Encoded message: [106, 213, 111, 97, 148, 255, 255, 0, 49, 52, 249, 184, 0, 255, 253, 0, 55, 246, 161, 160, 70, 255, 247, 0, 115, 183, 66, 2, 208, 255, 247, 0, 42, 129, 20, 46, 177, 255, 191, 0, 61, 104, 103, 80, 8, 127, 127, 0] (jÕoaÿÿ14ù¸ÿý7ö¡ Fÿ÷s·BÐÿ÷*.±ÿ¿=hgP).
+				*Expected decode: [110, 101, 118, 101, 114, 109, 111, 114, 101, 32, 98, 108, 111, 111, 100, 108, 101, 115, 115, 32, 99, 111, 114, 110, 99, 111, 98, 32, 115, 99, 117, 114, 114, 105, 108, 105, 116, 121, 32, 114, 101, 100, 101, 115, 105, 103, 110, 0] (nevermore bloodless corncob scurrility redesign)
+				*Actual decode: [110, 101, 118, 101, 114, 109, 111, 114, 101, 32, 98, 108, 111, 111, 100, 108, 101, 115, 115, 32, 99, 111, 114, 110, 99, 111, 98, 32, 115, 99, 117, 114, 114, 105, 108, 105, 116, 121, 32, 114, 101, 100, 101, 115, 105, 103, 110, 0] (nevermore bloodless corncob scurrility redesign)
+			*Passed test: Thousands of words
+				*Output hidden (too long)
+		
+	count_ones: 40.0 / 40
+			*Passed test: 2
+			*Passed test: 55
+			*Passed test: 42
+			*Passed test: 0xffffffff
+			*Passed test: 0x12345678
+			*Passed test: 0x55555555
+		
+Total: 80.0 / 80
+
+Final Score: 80.0 / 80

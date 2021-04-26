@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Watched</title>
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link href="../static/styles/signup.css" rel="stylesheet">
+    <script src="../static/script/jquery-1.11.2.js"></script>
+    <script src="../static/script/modal_watched.js"></script>
+    <style>
+      input {
+        width: 100%;
+        clear: both;
+      }
+    </style>
+  </head>
+  <body>
+      <div class="jumbotron">
+        <h1>Movie Recommender</h1>
+        <form class="form-signin">username</label>
+        <input type="name" name="inputUsername" id="username" class="form-control" placeholder="username" required autofocus>
+        <form class="form-signin">List of watched movies</label>
+        <input type="name" name="inputMovies" id="listOfMovies" class="form-control" placeholder="comma no space separated" required autofocus>
+        <label for="inputMovieImpression" class="sr-only">movie impressions</label>
+        <input type="name" name="inputMovieImpressions" id="inputMovieImpressions" class="form-control" placeholder="List of impressions" required>
+        <label for="inputTvShows" class="sr-only">List of watched tv shows</label>
+        <input type="DOB" name="inputTvShows" id="listOfTvShows" class="form-control" placeholder="comma no space separated" required autofocus>
+        <label for="inputTvImpression" class="sr-only">tv show impressions</label>
+        <input type="name" name="inputTvShowImpressions" id="inputTvImpression" class="form-control" placeholder="List of impressions" required>
+         
+        <button id="btnSubmit" class="btn btn-lg btn-primary btn-block" type="button">Submit</button>
+        <button id="btnUpdate" class="btn btn-lg btn-primary btn-block" type="button">Update</button>
+        <button id="btnLookup" class="btn btn-lg btn-primary btn-block" type="button">Search</button>
+      </form>
+      </div>
+      
+      <div>
+        {% if items %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="Name">Name</th>
+                <th class="Type">Type</th>
+                <th class="Watched">Watched or not</th>
+                <th class="Impression">User's Impression</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{item.Name}}</td>
+                    <td>{{item.Type}}</td>
+                    <td>{{item.Watched}}</td>
+                    <td>{{item.Impression}}</td>
+                </tr>
+            {% endfor %}
+            
+            </tbody>
+        </table>
+        {% endif %}
+  </div>
+
+ 
+    </div>
+  </body>
+</html>

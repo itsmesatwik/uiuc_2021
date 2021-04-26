@@ -1,0 +1,21 @@
+Grades for version committed on time
+	register: 5.0 / 5.0
+			*Passed test: register
+				*q correctly detected on 4 cycles.
+				5.00/5.00 points
+		
+	reg_writer: 15.0 / 15.0
+			*Passed test: write up
+				3.00/3.00 points
+			*Passed test: write down
+				3.00/3.00 points
+			*Passed test: subsequent runs
+				3.00/3.00 points
+			*Passed test: simple reset
+				3.00/3.00 points
+			*Passed test: complex reset
+				3.00/3.00 points
+		
+Total: 20.0 / 20.0
+
+Final Score: 20.0 / 20.0

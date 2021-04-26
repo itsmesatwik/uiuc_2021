@@ -1,0 +1,23 @@
+Grades for version committed on time
+	decoder: 18.57 / 20
+			*Passed test: invalid (opcode = 20 funct = 20)
+			*Passed test: add (opcode = 00 funct = 20)
+			*Failed test: addi (opcode = 08 funct = 20)
+				*Your output: alu_op = 011 rd_src = 1 alu_src2 = 1 writeenable = 1 except = 0
+			*Passed test: sub (opcode = 00 funct = 22)
+			*Passed test: invalid (opcode = 22 funct = 22)
+			*Passed test: and (opcode = 00 funct = 24)
+			*Passed test: invalid (opcode = 24 funct = 24)
+			*Passed test: andi (opcode = 0c funct = 24)
+			*Passed test: or (opcode = 00 funct = 25)
+			*Passed test: ori (opcode = 0d funct = 25)
+			*Passed test: invalid (opcode = 25 funct = 25)
+			*Passed test: nor (opcode = 00 funct = 27)
+			*Passed test: invalid (opcode = 27 funct = 27)
+			*Passed test: xor (opcode = 00 funct = 26)
+			*Passed test: invalid (opcode = 26 funct = 26)
+			*Passed test: xori (opcode = 0e funct = 26)
+		
+Total: 18.57 / 20
+
+Final Score: 18.57 / 20

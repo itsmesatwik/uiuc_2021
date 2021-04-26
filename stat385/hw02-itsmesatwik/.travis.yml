@@ -1,0 +1,10 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+sudo: false
+cache: packages
+script:
+  - Rscript tests/test_rmd_render.R
+#  - Rscript tests/white_list.R # Next time
+#  - Rscript tests/unit_test.R  # Let's try the embedded approach.
+#  - Rscript tests/lint_code.R

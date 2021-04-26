@@ -1,0 +1,15 @@
+Grades for version committed on time
+	palindrome_control: 33.0 / 80.0
+			*Passed test: Trivial
+			*Partially passed test: Odd length (Incorrectly set done to 0 without getting a go signal)
+			*Partially passed test: Even length (Incorrectly set done to 0 without getting a go signal)
+			*Partially passed test: Not palindrome (Incorrectly set done to 0 without getting a go signal)
+			*Partially passed test: All registers (Incorrectly set done to 0 without getting a go signal)
+			*Partially passed test: Base equal ending (Incorrectly set done to 0 without getting a go signal)
+			*Failed test: Reset mid run
+			*Partially passed test: Change base end mid run (Incorrectly set done to 0 without getting a go signal)
+			*Failed test: Subsequent runs
+		
+Total: 33.0 / 80.0
+
+Final Score: 33.0 / 80.0
